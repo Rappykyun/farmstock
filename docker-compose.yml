@@ -11,7 +11,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "${APP_PORT:-8080}:80"
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:80"
     volumes:
       - laravel-storage:/var/www/html/storage
 
