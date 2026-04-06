@@ -3,7 +3,7 @@
 This project can run in Docker with:
 
 - `app`: Laravel + Apache + built Vite assets
-- `db`: PostgreSQL 16
+- `db`: MySQL 8.4
 - `queue`: optional worker for database/Redis-backed queues
 
 ## 1. Create the Docker env file
@@ -17,6 +17,12 @@ Set at least:
 - `APP_KEY`
 - `APP_URL`
 - `DB_PASSWORD`
+
+The Docker stack expects:
+
+- `DB_CONNECTION=mysql`
+- `DB_HOST=db`
+- `DB_PORT=3306`
 
 Generate an app key without installing PHP on the host:
 

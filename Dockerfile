@@ -51,7 +51,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libicu-dev \
         libonig-dev \
-        libpq-dev \
         libxml2-dev \
         libzip-dev \
         unzip \
@@ -60,8 +59,7 @@ RUN apt-get update \
         intl \
         mbstring \
         opcache \
-        pdo_pgsql \
-        pgsql \
+        pdo_mysql \
         xml \
         zip \
     && a2enmod headers rewrite \

@@ -38,23 +38,29 @@ services:
       - laravel-storage:/var/www/html/storage
 
   db:
-    image: postgres:16-alpine
+    image: mysql:8.4
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-farmstock}
-      POSTGRES_USER: ${DB_USERNAME:-farmstock}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
+      MYSQL_DATABASE: ${DB_DATABASE:-farmstock}
+      MYSQL_USER: ${DB_USERNAME:-farmstock}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
     healthcheck:
       test:
-        - CMD-SHELL
-        - pg_isready -U ${DB_USERNAME:-farmstock} -d ${DB_DATABASE:-farmstock}
+        - CMD
+        - mysqladmin
+        - ping
+        - -h
+        - 127.0.0.1
+        - -uroot
+        - -p${DB_ROOT_PASSWORD:-rootpass}
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - mysql-data:/var/lib/mysql
 
 volumes:
   laravel-storage:
-  postgres-data:
+  mysql-data: 
