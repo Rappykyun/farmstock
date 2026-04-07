@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Tags } from 'lucide-react';
+import { LayoutGrid, Ruler, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -25,6 +25,12 @@ const mainNavItems: NavItem[] = [
         href: '/admin/product-categories',
         icon: Tags,
     },
+    {
+        title: 'Units',
+        href: '/admin/units',
+        icon: Ruler,
+    },
+
 ];
 
 export function AdminSidebar() {
