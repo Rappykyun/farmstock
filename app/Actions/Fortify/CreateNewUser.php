@@ -21,13 +21,26 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             ...$this->profileRules(),
+            'address' => ['required', 'string', 'max:255'],
+            'contact_number' => ['required', 'string', 'max:50'],
+            'role' => ['required', 'in:farmer,consumer'],
+            'farm_name' => ['nullable', 'required_if:role,farmer', 'string', 'max:255'],
+            'farm_details' => ['nullable', 'required_if:role,farmer', 'string'],
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'address' => $input['address'],
+            'contact_number' => $input['contact_number'],
+            'farm_name' => $input['role'] === 'farmer' ? $input['farm_name'] : null,
+            'farm_details' => $input['role'] === 'farmer' ? $input['farm_details'] : null,
         ]);
+
+        $user->assignRole($input['role']);
+
+        return $user;
     }
 }

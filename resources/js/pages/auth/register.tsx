@@ -17,13 +17,21 @@ export default function Register() {
             description="Enter your details below to create your account"
         >
             <Head title="Register" />
+
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
+                defaults={{
+                    role: 'consumer',
+                    address: '',
+                    contact_number: '',
+                    farm_name: '',
+                    farm_details: '',
+                }}
                 disableWhileProcessing
                 className="flex flex-col gap-6"
             >
-                {({ processing, errors }) => (
+                {({ data, processing, errors }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
@@ -38,10 +46,7 @@ export default function Register() {
                                     name="name"
                                     placeholder="Full name"
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+                                <InputError message={errors.name} className="mt-2" />
                             </div>
 
                             <div className="grid gap-2">
@@ -59,11 +64,83 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
+                                <Label htmlFor="address">Address</Label>
+                                <Input
+                                    id="address"
+                                    type="text"
+                                    required
+                                    tabIndex={3}
+                                    name="address"
+                                    placeholder="Street, barangay, municipality"
+                                />
+                                <InputError message={errors.address} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="contact_number">Contact number</Label>
+                                <Input
+                                    id="contact_number"
+                                    type="text"
+                                    required
+                                    tabIndex={4}
+                                    name="contact_number"
+                                    placeholder="09XXXXXXXXX"
+                                />
+                                <InputError message={errors.contact_number} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="role">Account type</Label>
+                                <select
+                                    id="role"
+                                    name="role"
+                                    required
+                                    tabIndex={5}
+                                    defaultValue="consumer"
+                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                >
+                                    <option value="consumer">Consumer</option>
+                                    <option value="farmer">Farmer</option>
+                                </select>
+                                <InputError message={errors.role} />
+                            </div>
+
+                            {data.role === 'farmer' && (
+                                <>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="farm_name">Farm name</Label>
+                                        <Input
+                                            id="farm_name"
+                                            type="text"
+                                            required
+                                            tabIndex={6}
+                                            name="farm_name"
+                                            placeholder="Your farm name"
+                                        />
+                                        <InputError message={errors.farm_name} />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="farm_details">Farm details</Label>
+                                        <textarea
+                                            id="farm_details"
+                                            name="farm_details"
+                                            required
+                                            tabIndex={7}
+                                            placeholder="Tell buyers about your farm"
+                                            className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                        />
+                                        <InputError message={errors.farm_details} />
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="grid gap-2">
                                 <Label htmlFor="password">Password</Label>
                                 <PasswordInput
                                     id="password"
                                     required
-                                    tabIndex={3}
+                                    tabIndex={8}
                                     autoComplete="new-password"
                                     name="password"
                                     placeholder="Password"
@@ -72,26 +149,22 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
+                                <Label htmlFor="password_confirmation">Confirm password</Label>
                                 <PasswordInput
                                     id="password_confirmation"
                                     required
-                                    tabIndex={4}
+                                    tabIndex={9}
                                     autoComplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Confirm password"
                                 />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
+                                <InputError message={errors.password_confirmation} />
                             </div>
 
                             <Button
                                 type="submit"
                                 className="mt-2 w-full"
-                                tabIndex={5}
+                                tabIndex={10}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
@@ -101,7 +174,7 @@ export default function Register() {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
+                            <TextLink href={login()} tabIndex={11}>
                                 Log in
                             </TextLink>
                         </div>
