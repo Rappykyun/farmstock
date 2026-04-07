@@ -1,4 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
+import { useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -11,6 +12,8 @@ import { login } from '@/routes';
 import { store } from '@/routes/register';
 
 export default function Register() {
+    const [role, setRole] = useState<'consumer' | 'farmer'>('consumer');
+
     return (
         <AuthLayout
             title="Create an account"
@@ -21,17 +24,10 @@ export default function Register() {
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
-                defaults={{
-                    role: 'consumer',
-                    address: '',
-                    contact_number: '',
-                    farm_name: '',
-                    farm_details: '',
-                }}
                 disableWhileProcessing
                 className="flex flex-col gap-6"
             >
-                {({ data, processing, errors }) => (
+                {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
@@ -96,7 +92,10 @@ export default function Register() {
                                     name="role"
                                     required
                                     tabIndex={5}
-                                    defaultValue="consumer"
+                                    value={role}
+                                    onChange={(event) =>
+                                        setRole(event.target.value as 'consumer' | 'farmer')
+                                    }
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 >
                                     <option value="consumer">Consumer</option>
@@ -105,14 +104,14 @@ export default function Register() {
                                 <InputError message={errors.role} />
                             </div>
 
-                            {data.role === 'farmer' && (
+                            {role === 'farmer' && (
                                 <>
                                     <div className="grid gap-2">
                                         <Label htmlFor="farm_name">Farm name</Label>
                                         <Input
                                             id="farm_name"
                                             type="text"
-                                            required
+                                            required={role === 'farmer'}
                                             tabIndex={6}
                                             name="farm_name"
                                             placeholder="Your farm name"
@@ -125,7 +124,7 @@ export default function Register() {
                                         <textarea
                                             id="farm_details"
                                             name="farm_details"
-                                            required
+                                            required={role === 'farmer'}
                                             tabIndex={7}
                                             placeholder="Tell buyers about your farm"
                                             className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
