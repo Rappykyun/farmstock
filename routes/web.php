@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Farmer\ProductController;
+use App\Http\Controllers\Farmer\ProductImageController;
+
 
 
 
@@ -45,6 +47,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('products', ProductController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+        Route::post('products/{product}/images', [ProductImageController::class, 'store'])
+            ->name('products.images.store');
+
+        Route::delete('products/{product}/images/{productImage}', [ProductImageController::class, 'destroy'])
+            ->name('products.images.destroy');
     });
 
 

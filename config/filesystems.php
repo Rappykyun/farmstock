@@ -59,6 +59,15 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        'products' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/products'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/') . '/storage/products',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
 
     ],
 
