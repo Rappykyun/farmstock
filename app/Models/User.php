@@ -11,6 +11,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 #[Fillable([
     'name',
@@ -34,6 +36,10 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'farmer_id');
+    }
     protected function casts(): array
     {
         return [

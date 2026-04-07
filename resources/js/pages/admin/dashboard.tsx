@@ -6,8 +6,8 @@ import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-    type ChartConfig,
 } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 import AdminLayout from '@/layouts/admin-layout';
 import type { BreadcrumbItem } from '@/types';
 
