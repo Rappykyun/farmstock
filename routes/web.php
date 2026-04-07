@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+
 
 
 
@@ -32,9 +34,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::inertia('admin/dashboard', 'admin/dashboard')
+    Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])
         ->middleware('role:admin')
         ->name('admin.dashboard');
+
 
     Route::inertia('farmer/dashboard', 'farmer/dashboard')
         ->middleware('role:farmer')
