@@ -7,6 +7,7 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\StatusController;
+use App\Http\Controllers\Admin\UserController;
 
 
 
@@ -46,6 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->only(['index', 'store', 'update', 'destroy']);
         Route::resource('statuses', StatusController::class)
             ->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('users', UserController::class)
+            ->only(['index', 'update']);
+
     });
 
 });

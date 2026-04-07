@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { CircleDot, LayoutGrid, Ruler, Tags } from 'lucide-react';
+import { CircleDot, LayoutGrid, Ruler, Tags, User } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -34,6 +34,11 @@ const mainNavItems: NavItem[] = [
         title: 'Statuses',
         href: '/admin/statuses',
         icon: CircleDot,
+    },
+    {
+        title: 'Users',
+        href: '/admin/users',
+        icon: User,
     },
 
 ];
