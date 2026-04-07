@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Users } from 'lucide-react';
+import { LayoutGrid, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -23,7 +23,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Categories',
         href: '/admin/product-categories',
-        icon: Users,
+        icon: Tags,
     },
 ];
 
