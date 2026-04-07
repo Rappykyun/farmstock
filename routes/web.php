@@ -6,6 +6,8 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\StatusController;
+
 
 
 Route::inertia('/', 'welcome', [
@@ -41,6 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('product-categories', ProductCategoryController::class)
             ->only(['index', 'store', 'update', 'destroy']);
         Route::resource('units', UnitController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('statuses', StatusController::class)
             ->only(['index', 'store', 'update', 'destroy']);
     });
 
