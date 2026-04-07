@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\Admin\ProductCategoryController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -33,6 +34,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('farmer/dashboard', 'farmer/dashboard')
         ->middleware('role:farmer')
         ->name('farmer.dashboard');
+        
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        Route::resource('product-categories', ProductCategoryController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+    });
+
 });
 
 require __DIR__ . '/settings.php';

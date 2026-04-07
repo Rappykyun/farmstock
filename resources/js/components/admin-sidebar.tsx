@@ -21,8 +21,8 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Users',
-        href: '#',
+        title: 'Categories',
+        href: '/admin/product-categories',
         icon: Users,
     },
 ];
