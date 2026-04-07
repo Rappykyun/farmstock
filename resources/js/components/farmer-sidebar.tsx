@@ -22,7 +22,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Products',
-        href: '#',
+        href: '/farmer/products',
         icon: Package,
     },
     {

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Farmer\ProductController;
 
 
 
@@ -39,9 +40,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.dashboard');
 
 
-    Route::inertia('farmer/dashboard', 'farmer/dashboard')
-        ->middleware('role:farmer')
-        ->name('farmer.dashboard');
+    Route::prefix('farmer')->name('farmer.')->middleware('role:farmer')->group(function () {
+        Route::inertia('dashboard', 'farmer/dashboard')->name('dashboard');
+
+        Route::resource('products', ProductController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    });
+
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::resource('product-categories', ProductCategoryController::class)
