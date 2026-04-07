@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { router, Head, Link, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { index, update } from '@/routes/farmer/products';
+import { destroy as destroyImage, store as storeImage } from '@/routes/farmer/products/images';
 import type { BreadcrumbItem } from '@/types';
 import FarmerLayout from '@/layouts/farmer-layout';
 
@@ -30,6 +31,15 @@ type StatusOption = Option & {
     color: string;
 };
 
+type ProductImage = {
+    id: number;
+    path: string;
+    is_primary: boolean;
+    sort_order: number;
+    url: string;
+    thumbnail_url: string;
+};
+
 type ProductData = {
     id: number;
     category_id: number;
@@ -39,7 +49,9 @@ type ProductData = {
     description: string | null;
     price: string;
     is_active: boolean;
+    images: ProductImage[];
 };
+
 
 type Props = {
     product: ProductData;
@@ -80,6 +92,11 @@ export default function EditProduct({
         price: product.price,
         is_active: product.is_active,
     });
+    const imageForm = useForm<{
+        images: File[];
+    }>({
+        images: [],
+    });
 
     const submit = () => {
         form.transform((data) => ({
@@ -88,7 +105,27 @@ export default function EditProduct({
             unit_id: Number(data.unit_id),
             status_id: Number(data.status_id),
         }));
+
         form.put(update.url(product.id));
+    };
+
+    const uploadImages = () => {
+        if (imageForm.data.images.length === 0) {
+            return;
+        }
+
+        imageForm.post(storeImage.url(product.id), {
+            forceFormData: true,
+            onSuccess: () => imageForm.reset(),
+        });
+    };
+
+    const removeImage = (imageId: number) => {
+        if (!window.confirm('Delete this image?')) {
+            return;
+        }
+
+        router.delete(destroyImage.url([product.id, imageId]));
     };
 
     return (
@@ -245,6 +282,91 @@ export default function EditProduct({
                                 Save Changes
                             </Button>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Product Images</CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="space-y-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="images">Upload Images</Label>
+                            <Input
+                                id="images"
+                                type="file"
+                                accept=".jpg,.jpeg,.png"
+                                multiple
+                                onChange={(event) =>
+                                    imageForm.setData(
+                                        'images',
+                                        Array.from(event.target.files ?? []),
+                                    )
+                                }
+                            />
+                            <p className="text-sm text-muted-foreground">
+                                JPG, JPEG, or PNG only. Maximum 5MB per image.
+                            </p>
+                            <InputError message={imageForm.errors.images} />
+                        </div>
+
+                        <div className="flex justify-end">
+                            <Button
+                                type="button"
+                                onClick={uploadImages}
+                                disabled={
+                                    imageForm.processing ||
+                                    imageForm.data.images.length === 0
+                                }
+                            >
+                                Upload Images
+                            </Button>
+                        </div>
+
+                        {product.images.length === 0 ? (
+                            <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+                                No images uploaded yet.
+                            </div>
+                        ) : (
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {product.images.map((image) => (
+                                    <div
+                                        key={image.id}
+                                        className="space-y-3 rounded-xl border p-3"
+                                    >
+                                        <div className="aspect-square overflow-hidden rounded-lg border bg-muted">
+                                            <img
+                                                src={image.thumbnail_url}
+                                                alt={product.name}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-2">
+                                            {image.is_primary ? (
+                                                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                                                    Primary
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">
+                                                    Image #{image.sort_order}
+                                                </span>
+                                            )}
+
+                                            <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => removeImage(image.id)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

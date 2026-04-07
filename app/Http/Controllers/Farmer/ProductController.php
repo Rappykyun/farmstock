@@ -10,6 +10,7 @@ use App\Models\ProductCategory;
 use App\Models\Status;
 use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -63,13 +64,14 @@ class ProductController extends Controller
     {
         $this->authorize('create', Product::class);
 
-        Product::create([
+        $product = Product::create([
             ...$request->validated(),
             'farmer_id' => $request->user()->id,
         ]);
 
-        return to_route('farmer.products.index');
+        return to_route('farmer.products.edit', $product);
     }
+
 
     public function edit(Product $product): Response
     {
@@ -85,6 +87,18 @@ class ProductController extends Controller
                 'description' => $product->description,
                 'price' => $product->price,
                 'is_active' => $product->is_active,
+                'images' => $product->images
+                    ->map(fn ($image) => [
+                        'id' => $image->id,
+                        'path' => $image->path,
+                        'is_primary' => $image->is_primary,
+                        'sort_order' => $image->sort_order,
+                        'url' => Storage::disk('products')->url($image->path),
+                        'thumbnail_url' => Storage::disk('products')->url(
+                            dirname($image->path).'/thumbnails/'.basename($image->path)
+                        ),
+                    ])
+                    ->values(),
             ],
             'categories' => ProductCategory::query()
                 ->where('is_active', true)
