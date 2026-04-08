@@ -13,10 +13,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import FarmerLayout from '@/layouts/farmer-layout';
 import { index, update } from '@/routes/farmer/products';
 import { destroy as destroyImage, store as storeImage } from '@/routes/farmer/products/images';
 import type { BreadcrumbItem } from '@/types';
-import FarmerLayout from '@/layouts/farmer-layout';
 
 type Option = {
     id: number;
