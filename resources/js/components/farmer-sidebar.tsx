@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Package, ClipboardList } from 'lucide-react';
+import { Boxes, ClipboardList, LayoutGrid, Package } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -30,6 +30,12 @@ const mainNavItems: NavItem[] = [
         href: '#',
         icon: ClipboardList,
     },
+    {
+        title: 'Inventory',
+        href: '/farmer/inventory',
+        icon: Boxes,
+    },
+
 ];
 
 export function FarmerSidebar() {

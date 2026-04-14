@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Farmer\ProductController;
 use App\Http\Controllers\Farmer\ProductImageController;
+use App\Http\Controllers\Farmer\InventoryController;
+
 
 
 
@@ -52,6 +54,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::delete('products/{product}/images/{productImage}', [ProductImageController::class, 'destroy'])
             ->name('products.images.destroy');
+        Route::get('inventory', [InventoryController::class, 'index'])
+            ->name('inventory.index');
+
+        Route::patch('products/{product}/inventory', [InventoryController::class, 'update'])
+            ->name('products.inventory.update');
+
     });
 
 
