@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'description',
     'price',
     'is_active',
+    'current_stock'
 ])]
 class Product extends Model
 {
@@ -29,6 +30,8 @@ class Product extends Model
         return [
             'price' => 'decimal:2',
             'is_active' => 'boolean',
+            'current_stock' => 'decimal:2',
+
         ];
     }
 
@@ -55,4 +58,9 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
+    public function inventoryLogs(): HasMany
+    {
+        return $this->hasMany(InventoryLog::class)->latest();
+    }
+
 }

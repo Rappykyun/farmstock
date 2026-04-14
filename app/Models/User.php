@@ -49,4 +49,9 @@ class User extends Authenticatable
             'is_active' => 'boolean',
         ];
     }
+    public function inventoryLogs(): HasMany
+    {
+        return $this->hasMany(InventoryLog::class, 'logged_by');
+    }
+
 }
