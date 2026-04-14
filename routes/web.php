@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Farmer\ProductController;
 use App\Http\Controllers\Farmer\ProductImageController;
 use App\Http\Controllers\Farmer\InventoryController;
+use App\Http\Controllers\Farmer\FarmerDashboardController;
+use App\Http\Controllers\Consumer\ProductBrowseController;
+
 
 
 
@@ -21,6 +24,13 @@ use App\Http\Controllers\Farmer\InventoryController;
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
+
+Route::get('products', [ProductBrowseController::class, 'index'])
+    ->name('products.index');
+
+Route::get('products/{product}', [ProductBrowseController::class, 'show'])
+    ->name('products.show');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function (Request $request) {
@@ -45,20 +55,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::prefix('farmer')->name('farmer.')->middleware('role:farmer')->group(function () {
-        Route::inertia('dashboard', 'farmer/dashboard')->name('dashboard');
+
+        Route::get('dashboard', [FarmerDashboardController::class, 'index'])
+            ->name('dashboard');
+
 
         Route::resource('products', ProductController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+
         Route::post('products/{product}/images', [ProductImageController::class, 'store'])
             ->name('products.images.store');
 
         Route::delete('products/{product}/images/{productImage}', [ProductImageController::class, 'destroy'])
             ->name('products.images.destroy');
+
         Route::get('inventory', [InventoryController::class, 'index'])
             ->name('inventory.index');
 
         Route::patch('products/{product}/inventory', [InventoryController::class, 'update'])
             ->name('products.inventory.update');
+
 
     });
 
