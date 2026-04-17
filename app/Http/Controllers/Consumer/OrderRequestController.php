@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Notifications\NewOrderRequestNotification;
+use App\Models\User;
 
 class OrderRequestController extends Controller
 {
@@ -102,6 +104,9 @@ class OrderRequestController extends Controller
 
             return $orderRequest;
         });
+$farmer = User::find($product->farmer_id);
+
+$farmer?->notify(new NewOrderRequestNotification($orderRequest));
 
         return to_route('orders.show', $orderRequest);
     }

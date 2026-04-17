@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Notifications\OrderRequestStatusUpdatedNotification;
+
 
 class OrderRequestController extends Controller
 {
@@ -152,6 +154,16 @@ class OrderRequestController extends Controller
                 'status_id' => $status->id,
             ]);
         });
+        $orderRequest->refresh()->load(['status', 'consumer']);
+
+$orderRequest->consumer?->notify(
+    new OrderRequestStatusUpdatedNotification(
+        $orderRequest,
+        $orderRequest->status?->name ?? $nextStatus,
+        $orderRequest->status?->slug ?? $nextStatus,
+    )
+);
+
 
         return to_route('farmer.orders.show', $orderRequest);
     }

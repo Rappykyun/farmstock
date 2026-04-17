@@ -18,6 +18,7 @@ use App\Http\Controllers\Farmer\OrderRequestController as FarmerOrderRequestCont
 use App\Http\Controllers\Consumer\ConsumerDashboardController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Farmer\ReportController as FarmerReportController;
+use App\Http\Controllers\Admin\ActivityMonitorController;
 
 
 
@@ -98,6 +99,9 @@ Route::get('reports/export/pdf', [FarmerReportController::class, 'exportPdf'])
 
 Route::get('reports/export', [ReportController::class, 'export'])
     ->name('reports.export');
+    Route::get('activity', [ActivityMonitorController::class, 'index'])
+    ->name('activity.index');
+
 
 
     });
