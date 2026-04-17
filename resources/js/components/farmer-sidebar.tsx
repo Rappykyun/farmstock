@@ -26,9 +26,9 @@ const mainNavItems: NavItem[] = [
         icon: Package,
     },
     {
-        title: 'Orders',
-        href: '#',
-        icon: ClipboardList,
+    title: 'Orders',
+    href: '/farmer/orders',
+    icon: ClipboardList,
     },
     {
         title: 'Inventory',

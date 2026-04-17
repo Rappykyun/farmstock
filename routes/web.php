@@ -15,10 +15,7 @@ use App\Http\Controllers\Farmer\InventoryController;
 use App\Http\Controllers\Farmer\FarmerDashboardController;
 use App\Http\Controllers\Consumer\ProductBrowseController;
 use App\Http\Controllers\Consumer\OrderRequestController;
-
-
-
-
+use App\Http\Controllers\Farmer\OrderRequestController as FarmerOrderRequestController;
 
 
 
@@ -60,7 +57,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard', [FarmerDashboardController::class, 'index'])
             ->name('dashboard');
 
-
         Route::resource('products', ProductController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
@@ -75,6 +71,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::patch('products/{product}/inventory', [InventoryController::class, 'update'])
             ->name('products.inventory.update');
+
+        Route::get('orders', [FarmerOrderRequestController::class, 'index'])
+            ->name('orders.index');
+
+        Route::get('orders/{orderRequest}', [FarmerOrderRequestController::class, 'show'])
+            ->name('orders.show');
+
+        Route::patch('orders/{orderRequest}', [FarmerOrderRequestController::class, 'update'])
+            ->name('orders.update');
 
 
     });
@@ -91,7 +96,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->only(['index', 'update']);
 
     });
-    
+
     Route::middleware(['auth', 'verified', 'role:consumer'])->group(function () {
     Route::get('orders', [OrderRequestController::class, 'index'])
         ->name('orders.index');
