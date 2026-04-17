@@ -1,10 +1,15 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Phone, Store } from 'lucide-react';
 import { useState } from 'react';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { index } from '@/routes/products';
+import { store as storeOrderRequest } from '@/routes/products/order-requests';
 
 type ProductDetail = {
     id: number;
@@ -34,12 +39,26 @@ type Props = {
     product: ProductDetail;
 };
 
+type OrderRequestFormData = {
+    quantity: string;
+    notes: string;
+};
+
 export default function ProductBrowseShow({ product }: Props) {
     const [selectedImage, setSelectedImage] = useState(
         product.images.find((image) => image.is_primary)?.url ??
             product.images[0]?.url ??
             null,
     );
+
+    const form = useForm<OrderRequestFormData>({
+        quantity: '',
+        notes: '',
+    });
+
+    const submit = () => {
+        form.post(storeOrderRequest.url(product.id));
+    };
 
     return (
         <>
@@ -144,9 +163,54 @@ export default function ProductBrowseShow({ product }: Props) {
                                             </p>
                                         )}
                                     </div>
+                                </CardContent>
+                            </Card>
 
-                                    <Button className="w-full" disabled>
-                                        Ordering not built yet
+                            <Card>
+                                <CardContent className="space-y-4 p-6">
+                                    <div>
+                                        <h2 className="text-lg font-semibold">Request Order</h2>
+                                        <p className="text-sm text-muted-foreground">
+                                            Submit a quantity request to this farmer.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="quantity">Quantity</Label>
+                                        <Input
+                                            id="quantity"
+                                            type="number"
+                                            min="0.01"
+                                            step="0.01"
+                                            value={form.data.quantity}
+                                            onChange={(event) =>
+                                                form.setData('quantity', event.target.value)
+                                            }
+                                            placeholder="0.00"
+                                        />
+                                        <InputError message={form.errors.quantity} />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="notes">Notes</Label>
+                                        <Textarea
+                                            id="notes"
+                                            value={form.data.notes}
+                                            onChange={(event) =>
+                                                form.setData('notes', event.target.value)
+                                            }
+                                            placeholder="Optional delivery or pickup notes"
+                                        />
+                                        <InputError message={form.errors.notes} />
+                                    </div>
+
+                                    <Button
+                                        type="button"
+                                        className="w-full"
+                                        onClick={submit}
+                                        disabled={form.processing}
+                                    >
+                                        Submit Request
                                     </Button>
                                 </CardContent>
                             </Card>
