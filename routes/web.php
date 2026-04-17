@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -16,6 +15,9 @@ use App\Http\Controllers\Farmer\FarmerDashboardController;
 use App\Http\Controllers\Consumer\ProductBrowseController;
 use App\Http\Controllers\Consumer\OrderRequestController;
 use App\Http\Controllers\Farmer\OrderRequestController as FarmerOrderRequestController;
+use App\Http\Controllers\Consumer\ConsumerDashboardController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Farmer\ReportController as FarmerReportController;
 
 
 
@@ -31,21 +33,9 @@ Route::get('products/{product}', [ProductBrowseController::class, 'show'])
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function (Request $request) {
-        $user = $request->user();
+Route::get('dashboard', [ConsumerDashboardController::class, 'index'])
+    ->name('dashboard');
 
-        if ($user->hasRole('admin')) {
-            return to_route('admin.dashboard');
-        }
-
-        if ($user->hasRole('farmer')) {
-            return to_route('farmer.dashboard');
-        }
-
-        abort_unless($user->hasRole('consumer'), 403);
-
-        return Inertia::render('dashboard');
-    })->name('dashboard');
 
     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])
         ->middleware('role:admin')
@@ -80,6 +70,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::patch('orders/{orderRequest}', [FarmerOrderRequestController::class, 'update'])
             ->name('orders.update');
+            Route::get('reports', [FarmerReportController::class, 'index'])
+    ->name('reports.index');
+
+Route::get('reports/export/csv', [FarmerReportController::class, 'exportCsv'])
+    ->name('reports.export.csv');
+
+Route::get('reports/export/pdf', [FarmerReportController::class, 'exportPdf'])
+    ->name('reports.export.pdf');
+
 
 
     });
@@ -94,6 +93,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->only(['index', 'store', 'update', 'destroy']);
         Route::resource('users', UserController::class)
             ->only(['index', 'update']);
+            Route::get('reports', [ReportController::class, 'index'])
+    ->name('reports.index');
+
+Route::get('reports/export', [ReportController::class, 'export'])
+    ->name('reports.export');
+
 
     });
 

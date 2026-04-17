@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 
 #[Fillable([
@@ -23,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Product extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected function casts(): array
     {
@@ -69,6 +71,25 @@ class Product extends Model
     {
     return $this->hasMany(OrderRequestItem::class);
     }
+    public function getActivitylogOptions(): LogOptions
+{
+    return LogOptions::defaults()
+        ->useLogName('product')
+        ->logOnly([
+            'farmer_id',
+            'category_id',
+            'unit_id',
+            'status_id',
+            'name',
+            'description',
+            'price',
+            'current_stock',
+            'is_active',
+        ])
+        ->logOnlyDirty()
+        ->dontSubmitEmptyLogs();
+}
+
 
 
 }

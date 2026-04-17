@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { CircleDot, LayoutGrid, Ruler, Tags, User } from 'lucide-react';
+import { BarChart3, CircleDot, LayoutGrid, Ruler, Tags, User } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -40,6 +40,11 @@ const mainNavItems: NavItem[] = [
         href: '/admin/users',
         icon: User,
     },
+    {
+    title: 'Reports',
+    href: '/admin/reports',
+    icon: BarChart3,
+},
 
 ];
 

@@ -12,6 +12,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 
 #[Fillable([
@@ -29,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles, LogsActivity;
 
     /**
      * Get the attributes that should be cast.
@@ -62,6 +64,30 @@ public function farmerOrderRequests(): HasMany
 {
     return $this->hasMany(OrderRequest::class, 'farmer_id');
 }
+public function getActivitylogOptions(): LogOptions
+{
+    return LogOptions::defaults()
+        ->useLogName('user')
+        ->logOnly([
+            'name',
+            'email',
+            'address',
+            'contact_number',
+            'farm_name',
+            'farm_details',
+            'avatar',
+            'is_active',
+        ])
+        ->logOnlyDirty()
+        ->dontSubmitEmptyLogs()
+        ->dontLogIfAttributesChangedOnly([
+            'remember_token',
+            'two_factor_secret',
+            'two_factor_recovery_codes',
+            'two_factor_confirmed_at',
+        ]);
+}
+
 
 
 }

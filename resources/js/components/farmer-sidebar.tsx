@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Boxes, ClipboardList, LayoutGrid, Package } from 'lucide-react';
+import { BarChart3, Boxes, ClipboardList, LayoutGrid, Package } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -35,6 +35,12 @@ const mainNavItems: NavItem[] = [
         href: '/farmer/inventory',
         icon: Boxes,
     },
+    {
+    title: 'Reports',
+    href: '/farmer/reports',
+    icon: BarChart3,
+},
+
 
 ];
 
