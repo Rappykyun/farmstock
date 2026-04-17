@@ -94,9 +94,7 @@ class ProductController extends Controller
                         'is_primary' => $image->is_primary,
                         'sort_order' => $image->sort_order,
                         'url' => Storage::disk('products')->url($image->path),
-                        'thumbnail_url' => Storage::disk('products')->url(
-                            dirname($image->path).'/thumbnails/'.basename($image->path)
-                        ),
+                        'thumbnail_url' => $this->productImageThumbnailUrl($image->path),
                     ])
                     ->values(),
             ],
@@ -132,5 +130,15 @@ class ProductController extends Controller
         $product->delete();
 
         return to_route('farmer.products.index');
+    }
+
+    private function productImageThumbnailUrl(string $path): string
+    {
+        $disk = Storage::disk('products');
+        $thumbnailPath = dirname($path).'/thumbnails/'.basename($path);
+
+        return $disk->exists($thumbnailPath)
+            ? $disk->url($thumbnailPath)
+            : $disk->url($path);
     }
 }

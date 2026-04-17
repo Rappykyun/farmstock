@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
+use Throwable;
 
 class ProductImageController extends Controller
 {
@@ -34,9 +35,7 @@ class ProductImageController extends Controller
 
             $disk->put($path, file_get_contents($upload->getRealPath()));
 
-            Image::read($upload)
-                ->scaleDown(width: 600)
-                ->save($disk->path($thumbnailPath), quality: 80);
+            $this->createThumbnail($upload, $disk->path($thumbnailPath));
 
             $product->images()->create([
                 'path' => $path,
@@ -74,5 +73,16 @@ class ProductImageController extends Controller
     private function thumbnailPath(string $path): string
     {
         return dirname($path) . '/thumbnails/' . basename($path);
+    }
+
+    private function createThumbnail(object $upload, string $thumbnailPath): void
+    {
+        try {
+            Image::read($upload)
+                ->scaleDown(width: 600)
+                ->save($thumbnailPath, quality: 80);
+        } catch (Throwable) {
+            // Keep uploads working even when GD/Imagick is not installed locally.
+        }
     }
 }

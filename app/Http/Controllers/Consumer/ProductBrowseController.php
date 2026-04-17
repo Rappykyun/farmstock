@@ -103,11 +103,19 @@ class ProductBrowseController extends Controller
                     'id' => $image->id,
                     'is_primary' => $image->is_primary,
                     'url' => Storage::disk('products')->url($image->path),
-                    'thumbnail_url' => Storage::disk('products')->url(
-                        dirname($image->path) . '/thumbnails/' . basename($image->path)
-                    ),
+                    'thumbnail_url' => $this->productImageThumbnailUrl($image->path),
                 ])->values(),
             ],
         ]);
+    }
+
+    private function productImageThumbnailUrl(string $path): string
+    {
+        $disk = Storage::disk('products');
+        $thumbnailPath = dirname($path).'/thumbnails/'.basename($path);
+
+        return $disk->exists($thumbnailPath)
+            ? $disk->url($thumbnailPath)
+            : $disk->url($path);
     }
 }

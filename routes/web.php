@@ -14,6 +14,7 @@ use App\Http\Controllers\Farmer\ProductImageController;
 use App\Http\Controllers\Farmer\InventoryController;
 use App\Http\Controllers\Farmer\FarmerDashboardController;
 use App\Http\Controllers\Consumer\ProductBrowseController;
+use App\Http\Controllers\Consumer\OrderRequestController;
 
 
 
@@ -90,6 +91,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->only(['index', 'update']);
 
     });
+    
+    Route::middleware(['auth', 'verified', 'role:consumer'])->group(function () {
+    Route::get('orders', [OrderRequestController::class, 'index'])
+        ->name('orders.index');
+
+    Route::post('products/{product}/order-requests', [OrderRequestController::class, 'store'])
+        ->name('products.order-requests.store');
+
+    Route::get('orders/{orderRequest}', [OrderRequestController::class, 'show'])
+        ->name('orders.show');
+});
+
 
 });
 
