@@ -54,13 +54,21 @@ class Product extends Model
     {
         return $this->belongsTo(Status::class);
     }
+    
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
+
     public function inventoryLogs(): HasMany
     {
         return $this->hasMany(InventoryLog::class)->latest();
     }
+
+    public function orderRequestItems(): HasMany
+    {
+    return $this->hasMany(OrderRequestItem::class);
+    }
+
 
 }

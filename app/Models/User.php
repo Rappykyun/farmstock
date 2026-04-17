@@ -53,5 +53,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(InventoryLog::class, 'logged_by');
     }
+    public function consumerOrderRequests(): HasMany
+{
+    return $this->hasMany(OrderRequest::class, 'consumer_id');
+}
+
+public function farmerOrderRequests(): HasMany
+{
+    return $this->hasMany(OrderRequest::class, 'farmer_id');
+}
+
 
 }
