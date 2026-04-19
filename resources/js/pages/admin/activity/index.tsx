@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Dot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,6 +69,93 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/admin/activity',
     },
 ];
+
+type ActivityProperties = {
+    attributes?: Record<string, unknown>;
+    old?: Record<string, unknown>;
+};
+
+const IGNORED_FIELDS = new Set([
+    'updated_at',
+    'created_at',
+    'deleted_at',
+    'remember_token',
+]);
+
+function formatFieldName(field: string): string {
+    return field
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatValue(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+        return 'empty';
+    }
+
+    if (typeof value === 'boolean') {
+        return value ? 'Yes' : 'No';
+    }
+
+    if (typeof value === 'number' || typeof value === 'string') {
+        return String(value);
+    }
+
+    return 'updated';
+}
+
+function getProperties(properties: Record<string, unknown>): ActivityProperties {
+    return properties as ActivityProperties;
+}
+
+function getPrimaryLabel(activity: ActivityRow): string {
+    const properties = getProperties(activity.properties);
+    const attributes = properties.attributes ?? {};
+
+    return (
+        (attributes.name as string | undefined) ||
+        (attributes.email as string | undefined) ||
+        (attributes.title as string | undefined) ||
+        (attributes.slug as string | undefined) ||
+        `${activity.subject_type ?? 'Record'}${activity.subject_id ? ` #${activity.subject_id}` : ''}`
+    );
+}
+
+function getChangeLines(activity: ActivityRow): string[] {
+    const properties = getProperties(activity.properties);
+    const attributes = properties.attributes ?? {};
+    const old = properties.old ?? {};
+
+    if ((activity.event ?? activity.description) === 'updated') {
+        return Object.keys(attributes)
+            .filter((field) => !IGNORED_FIELDS.has(field))
+            .map((field) => {
+                const before = formatValue(old[field]);
+                const after = formatValue(attributes[field]);
+
+                return `${formatFieldName(field)}: ${before} -> ${after}`;
+            })
+            .slice(0, 3);
+    }
+
+    if ((activity.event ?? activity.description) === 'created') {
+        return Object.keys(attributes)
+            .filter((field) => !IGNORED_FIELDS.has(field))
+            .slice(0, 3)
+            .map((field) => `${formatFieldName(field)}: ${formatValue(attributes[field])}`);
+    }
+
+    return [];
+}
+
+function getChangedFields(activity: ActivityRow): string[] {
+    const properties = getProperties(activity.properties);
+    const attributes = properties.attributes ?? {};
+
+    return Object.keys(attributes)
+        .filter((field) => !IGNORED_FIELDS.has(field))
+        .slice(0, 4);
+}
 
 export default function AdminActivityIndex({
     filters,
@@ -196,7 +284,7 @@ export default function AdminActivityIndex({
                                         <TableHead>Action</TableHead>
                                         <TableHead>Model</TableHead>
                                         <TableHead>Log</TableHead>
-                                        <TableHead>Properties</TableHead>
+                                        <TableHead>Details</TableHead>
                                     </TableRow>
                                 </TableHeader>
 
@@ -225,9 +313,45 @@ export default function AdminActivityIndex({
                                             </TableCell>
                                             <TableCell>{activity.log_name ?? 'default'}</TableCell>
                                             <TableCell className="max-w-md">
-                                                <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">
-                                                    {JSON.stringify(activity.properties, null, 2)}
-                                                </pre>
+                                                <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
+                                                    <div className="space-y-1">
+                                                        <p className="font-medium">
+                                                            {getPrimaryLabel(activity)}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {activity.subject_type ?? 'Record'}
+                                                            {activity.subject_id ? ` #${activity.subject_id}` : ''}
+                                                        </p>
+                                                    </div>
+
+                                                    {getChangeLines(activity).length > 0 && (
+                                                        <div className="space-y-1">
+                                                            {getChangeLines(activity).map((line) => (
+                                                                <div
+                                                                    key={line}
+                                                                    className="flex items-start gap-1 text-xs text-muted-foreground"
+                                                                >
+                                                                    <Dot className="mt-0.5 h-4 w-4 shrink-0" />
+                                                                    <span>{line}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {getChangedFields(activity).length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {getChangedFields(activity).map((field) => (
+                                                                <Badge
+                                                                    key={field}
+                                                                    variant="secondary"
+                                                                    className="rounded-full"
+                                                                >
+                                                                    {formatFieldName(field)}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}

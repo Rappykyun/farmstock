@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { useRef, useState } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
@@ -11,12 +11,11 @@ import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
-import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { dashboard } from '@/routes';
+import SettingsPageLayout from '@/layouts/settings/page-layout';
 import { edit } from '@/routes/security';
 import { disable, enable } from '@/routes/two-factor';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem, User } from '@/types';
 
 type Props = {
     canManageTwoFactor?: boolean;
@@ -24,28 +23,30 @@ type Props = {
     twoFactorEnabled?: boolean;
 };
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-    },
-    {
-        title: 'Settings',
-        href: '/settings',
-    },
-    {
-        title: 'Security Settings',
-        href: edit(),
-    },
-];
-
 export default function Security({
     canManageTwoFactor = false,
     requiresConfirmation = false,
     twoFactorEnabled = false,
 }: Props) {
+    const { auth } = usePage<{ auth: { user: User } }>().props;
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Settings',
+            href: '/settings',
+        },
+        {
+            title: 'Security Settings',
+            href: edit(),
+        },
+    ];
+
+    if (auth.user.primary_role === 'admin') {
+        breadcrumbs.unshift({ title: 'Admin Dashboard', href: '/admin/dashboard' });
+    } else if (auth.user.primary_role === 'farmer') {
+        breadcrumbs.unshift({ title: 'Farmer Dashboard', href: '/farmer/dashboard' });
+    }
 
     const {
         qrCodeSvg,
@@ -60,7 +61,7 @@ export default function Security({
     const [showSetupModal, setShowSetupModal] = useState<boolean>(false);
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <SettingsPageLayout breadcrumbs={breadcrumbs}>
             <Head title="Security settings" />
 
             <h1 className="sr-only">Security settings</h1>
@@ -266,6 +267,6 @@ export default function Security({
                     </div>
                 )}
             </SettingsLayout>
-        </AppLayout>
+        </SettingsPageLayout>
     );
 }

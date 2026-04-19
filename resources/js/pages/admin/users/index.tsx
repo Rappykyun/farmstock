@@ -46,7 +46,6 @@ type UserRow = {
     farm_name: string | null;
     is_active: boolean;
     role: string | null;
-    email_verified_at: string | null;
     created_at: string | null;
 };
 
@@ -216,7 +215,6 @@ export default function UsersIndex({
                                         <TableHead>Status</TableHead>
                                         <TableHead>Contact</TableHead>
                                         <TableHead>Farm</TableHead>
-                                        <TableHead>Verified</TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -265,18 +263,6 @@ export default function UsersIndex({
 
                                             <TableCell className="text-muted-foreground">
                                                 {user.farm_name || 'Not a farmer'}
-                                            </TableCell>
-
-                                            <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        user.email_verified_at
-                                                            ? 'default'
-                                                            : 'secondary'
-                                                    }
-                                                >
-                                                    {user.email_verified_at ? 'Verified' : 'Pending'}
-                                                </Badge>
                                             </TableCell>
 
                                             <TableCell className="text-right">

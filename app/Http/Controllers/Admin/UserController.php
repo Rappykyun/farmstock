@@ -38,7 +38,6 @@ class UserController extends Controller
                     'farm_name' => $user->farm_name,
                     'is_active' => $user->is_active,
                     'role' => $user->getRoleNames()->first(),
-                    'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
                     'created_at' => $user->created_at?->toDateTimeString(),
                 ]),
         ]);

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,11 +36,28 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user
+                    ? [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'avatar' => $user->avatar
+                            ? (str_starts_with($user->avatar, 'http')
+                                ? $user->avatar
+                                : Storage::disk('public')->url($user->avatar))
+                            : null,
+                        'primary_role' => $user->getRoleNames()->first(),
+                        'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
+                        'created_at' => $user->created_at?->toDateTimeString(),
+                        'updated_at' => $user->updated_at?->toDateTimeString(),
+                    ]
+                    : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'notifications' => fn () => auth()->check()
