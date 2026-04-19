@@ -19,23 +19,32 @@ use App\Http\Controllers\Consumer\ConsumerDashboardController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Farmer\ReportController as FarmerReportController;
 use App\Http\Controllers\Admin\ActivityMonitorController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\NotificationController;
 
 
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', LandingPageController::class)->name('home');
 
-Route::get('products', [ProductBrowseController::class, 'index'])
-    ->name('products.index');
+Route::middleware(['auth'])->group(function () {
+    Route::get('dashboard', [ConsumerDashboardController::class, 'index'])
+        ->name('dashboard');
 
-Route::get('products/{product}', [ProductBrowseController::class, 'show'])
-    ->name('products.show');
+    Route::get('products', [ProductBrowseController::class, 'index'])
+        ->name('products.index');
 
+    Route::get('products/{product}', [ProductBrowseController::class, 'show'])
+        ->name('products.show');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-Route::get('dashboard', [ConsumerDashboardController::class, 'index'])
-    ->name('dashboard');
+    Route::get('notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.read-all');
 
 
     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])
@@ -71,16 +80,15 @@ Route::get('dashboard', [ConsumerDashboardController::class, 'index'])
 
         Route::patch('orders/{orderRequest}', [FarmerOrderRequestController::class, 'update'])
             ->name('orders.update');
-            Route::get('reports', [FarmerReportController::class, 'index'])
-    ->name('reports.index');
 
-Route::get('reports/export/csv', [FarmerReportController::class, 'exportCsv'])
-    ->name('reports.export.csv');
+        Route::get('reports', [FarmerReportController::class, 'index'])
+            ->name('reports.index');
 
-Route::get('reports/export/pdf', [FarmerReportController::class, 'exportPdf'])
-    ->name('reports.export.pdf');
+        Route::get('reports/export/csv', [FarmerReportController::class, 'exportCsv'])
+            ->name('reports.export.csv');
 
-
+        Route::get('reports/export/pdf', [FarmerReportController::class, 'exportPdf'])
+            ->name('reports.export.pdf');
 
     });
 
@@ -94,23 +102,32 @@ Route::get('reports/export/pdf', [FarmerReportController::class, 'exportPdf'])
             ->only(['index', 'store', 'update', 'destroy']);
         Route::resource('users', UserController::class)
             ->only(['index', 'update']);
-            Route::get('reports', [ReportController::class, 'index'])
-    ->name('reports.index');
 
-Route::get('reports/export', [ReportController::class, 'export'])
-    ->name('reports.export');
-    Route::get('activity', [ActivityMonitorController::class, 'index'])
-    ->name('activity.index');
+        Route::get('reports', [ReportController::class, 'index'])
+            ->name('reports.index');
+
+        Route::get('reports/export', [ReportController::class, 'export'])
+            ->name('reports.export');
+
+        Route::get('activity', [ActivityMonitorController::class, 'index'])
+            ->name('activity.index');
+
+        Route::get('settings', [SettingsController::class, 'index'])
+            ->name('settings.index');
+
+        Route::patch('settings', [SettingsController::class, 'update'])
+            ->name('settings.update');
 
 
 
     });
 
-    Route::middleware(['auth', 'verified', 'role:consumer'])->group(function () {
+    Route::middleware(['auth', 'role:consumer'])->group(function () {
     Route::get('orders', [OrderRequestController::class, 'index'])
         ->name('orders.index');
 
     Route::post('products/{product}/order-requests', [OrderRequestController::class, 'store'])
+        ->middleware('throttle:order-requests')
         ->name('products.order-requests.store');
 
     Route::get('orders/{orderRequest}', [OrderRequestController::class, 'show'])

@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import ConfirmActionDialog from '@/components/confirm-action-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +23,7 @@ import {
 import { create, destroy, edit } from '@/routes/farmer/products';
 import type { BreadcrumbItem } from '@/types';
 import FarmerLayout from '@/layouts/farmer-layout';
+import { toast } from 'sonner';
 
 type ProductRow = {
     id: number;
@@ -48,6 +50,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ProductsIndex({ products }: Props) {
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('all');
+    const [deletingProduct, setDeletingProduct] = useState<ProductRow | null>(null);
 
     const categories = useMemo(
         () =>
@@ -76,11 +79,21 @@ export default function ProductsIndex({ products }: Props) {
     }, [category, products, search]);
 
     const removeProduct = (product: ProductRow) => {
-        if (!window.confirm(`Delete product "${product.name}"?`)) {
+        setDeletingProduct(product);
+    };
+
+    const confirmDeleteProduct = () => {
+        if (!deletingProduct) {
             return;
         }
 
-        router.delete(destroy.url(product.id));
+        router.delete(destroy.url(deletingProduct.id), {
+            onSuccess: () => {
+                toast.success(`Product "${deletingProduct.name}" deleted.`);
+                setDeletingProduct(null);
+            },
+            onError: () => toast.error('Product deletion failed.'),
+        });
     };
 
     return (
@@ -201,6 +214,24 @@ export default function ProductsIndex({ products }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmActionDialog
+                open={deletingProduct !== null}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setDeletingProduct(null);
+                    }
+                }}
+                title="Delete product?"
+                description={
+                    deletingProduct
+                        ? `This will permanently remove "${deletingProduct.name}" from your catalog.`
+                        : ''
+                }
+                confirmLabel="Delete"
+                destructive
+                onConfirm={confirmDeleteProduct}
+            />
         </FarmerLayout>
     );
 }

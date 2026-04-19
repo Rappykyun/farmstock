@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { dashboard } from '@/routes';
 import { edit } from '@/routes/security';
 import { disable, enable } from '@/routes/two-factor';
 import type { BreadcrumbItem } from '@/types';
@@ -25,7 +26,15 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Security settings',
+        title: 'Dashboard',
+        href: dashboard(),
+    },
+    {
+        title: 'Settings',
+        href: '/settings',
+    },
+    {
+        title: 'Security Settings',
         href: edit(),
     },
 ];

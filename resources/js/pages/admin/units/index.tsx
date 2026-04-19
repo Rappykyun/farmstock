@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
+import ConfirmActionDialog from '@/components/confirm-action-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/admin-layout';
 import { destroy, store, update } from '@/routes/admin/units';
 import type { BreadcrumbItem } from '@/types';
+import { toast } from 'sonner';
 
 type Unit = {
     id: number;
@@ -56,6 +58,7 @@ const defaultFormData: UnitFormData = {
 export default function UnitsIndex({ units }: Props) {
     const [open, setOpen] = useState(false);
     const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+    const [deletingUnit, setDeletingUnit] = useState<Unit | null>(null);
 
     const form = useForm<UnitFormData>(defaultFormData);
 
@@ -93,23 +96,41 @@ export default function UnitsIndex({ units }: Props) {
     const submit = () => {
         if (editingUnit) {
             form.put(update.url(editingUnit.id), {
-                onSuccess: () => closeModal(false),
+                onSuccess: () => {
+                    closeModal(false);
+                    toast.success(`Unit "${editingUnit.name}" updated.`);
+                },
+                onError: () => toast.error('Unit update failed.'),
             });
 
             return;
         }
 
         form.post(store.url(), {
-            onSuccess: () => closeModal(false),
+            onSuccess: () => {
+                closeModal(false);
+                toast.success('Unit created.');
+            },
+            onError: () => toast.error('Unit creation failed.'),
         });
     };
 
     const removeUnit = (unit: Unit) => {
-        if (!window.confirm(`Delete unit "${unit.name}"?`)) {
+        setDeletingUnit(unit);
+    };
+
+    const confirmDeleteUnit = () => {
+        if (!deletingUnit) {
             return;
         }
 
-        router.delete(destroy.url(unit.id));
+        router.delete(destroy.url(deletingUnit.id), {
+            onSuccess: () => {
+                toast.success(`Unit "${deletingUnit.name}" deleted.`);
+                setDeletingUnit(null);
+            },
+            onError: () => toast.error('Unit deletion failed.'),
+        });
     };
 
     return (
@@ -286,6 +307,24 @@ export default function UnitsIndex({ units }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmActionDialog
+                open={deletingUnit !== null}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setDeletingUnit(null);
+                    }
+                }}
+                title="Delete unit?"
+                description={
+                    deletingUnit
+                        ? `This will permanently remove "${deletingUnit.name}".`
+                        : ''
+                }
+                confirmLabel="Delete"
+                destructive
+                onConfirm={confirmDeleteUnit}
+            />
         </AdminLayout>
     );
 }

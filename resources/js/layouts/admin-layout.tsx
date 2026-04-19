@@ -1,6 +1,7 @@
 import { AdminSidebar } from '@/components/admin-sidebar';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
+import { NotificationBell } from '@/components/notification-bell';
 import {
     SidebarInset,
     SidebarProvider,
@@ -25,6 +26,9 @@ export default function AdminLayout({
                     <div className="flex h-16 items-center gap-2 border-b px-4">
                         <SidebarTrigger />
                         <div className="text-sm font-medium">Admin Panel</div>
+                        <div className="ml-auto">
+                            <NotificationBell />
+                        </div>
                     </div>
 
                     {breadcrumbs.length > 0 && (

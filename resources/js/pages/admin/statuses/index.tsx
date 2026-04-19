@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
+import ConfirmActionDialog from '@/components/confirm-action-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,7 @@ import {
 import AdminLayout from '@/layouts/admin-layout';
 import { destroy, store, update } from '@/routes/admin/statuses';
 import type { BreadcrumbItem } from '@/types';
+import { toast } from 'sonner';
 
 type StatusType = 'product' | 'inventory' | 'order';
 
@@ -70,6 +72,7 @@ export default function StatusesIndex({ statuses }: Props) {
     const [open, setOpen] = useState(false);
     const [editingStatus, setEditingStatus] = useState<Status | null>(null);
     const [selectedType, setSelectedType] = useState<'all' | StatusType>('all');
+    const [deletingStatus, setDeletingStatus] = useState<Status | null>(null);
 
     const form = useForm<StatusFormData>(defaultFormData);
 
@@ -116,23 +119,41 @@ export default function StatusesIndex({ statuses }: Props) {
     const submit = () => {
         if (editingStatus) {
             form.put(update.url(editingStatus.id), {
-                onSuccess: () => closeModal(false),
+                onSuccess: () => {
+                    closeModal(false);
+                    toast.success(`Status "${editingStatus.name}" updated.`);
+                },
+                onError: () => toast.error('Status update failed.'),
             });
 
             return;
         }
 
         form.post(store.url(), {
-            onSuccess: () => closeModal(false),
+            onSuccess: () => {
+                closeModal(false);
+                toast.success('Status created.');
+            },
+            onError: () => toast.error('Status creation failed.'),
         });
     };
 
     const removeStatus = (status: Status) => {
-        if (!window.confirm(`Delete status "${status.name}"?`)) {
+        setDeletingStatus(status);
+    };
+
+    const confirmDeleteStatus = () => {
+        if (!deletingStatus) {
             return;
         }
 
-        router.delete(destroy.url(status.id));
+        router.delete(destroy.url(deletingStatus.id), {
+            onSuccess: () => {
+                toast.success(`Status "${deletingStatus.name}" deleted.`);
+                setDeletingStatus(null);
+            },
+            onError: () => toast.error('Status deletion failed.'),
+        });
     };
 
     return (
@@ -368,6 +389,24 @@ export default function StatusesIndex({ statuses }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmActionDialog
+                open={deletingStatus !== null}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setDeletingStatus(null);
+                    }
+                }}
+                title="Delete status?"
+                description={
+                    deletingStatus
+                        ? `This will permanently remove "${deletingStatus.name}".`
+                        : ''
+                }
+                confirmLabel="Delete"
+                destructive
+                onConfirm={confirmDeleteStatus}
+            />
         </AdminLayout>
     );
 }

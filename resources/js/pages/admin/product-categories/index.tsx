@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
+import ConfirmActionDialog from '@/components/confirm-action-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/admin-layout';
 import { destroy, store, update } from '@/routes/admin/product-categories';
 import type { BreadcrumbItem } from '@/types';
+import { toast } from 'sonner';
 
 type ProductCategory = {
     id: number;
@@ -54,6 +56,7 @@ const defaultFormData: CategoryFormData = {
 export default function ProductCategoriesIndex({ categories }: Props) {
     const [open, setOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
+    const [deletingCategory, setDeletingCategory] = useState<ProductCategory | null>(null);
 
     const form = useForm<CategoryFormData>(defaultFormData);
 
@@ -90,23 +93,41 @@ export default function ProductCategoriesIndex({ categories }: Props) {
     const submit = () => {
         if (editingCategory) {
             form.put(update.url(editingCategory.id), {
-                onSuccess: () => closeModal(false),
+                onSuccess: () => {
+                    closeModal(false);
+                    toast.success(`Category "${editingCategory.name}" updated.`);
+                },
+                onError: () => toast.error('Category update failed.'),
             });
 
             return;
         }
 
         form.post(store.url(), {
-            onSuccess: () => closeModal(false),
+            onSuccess: () => {
+                closeModal(false);
+                toast.success('Category created.');
+            },
+            onError: () => toast.error('Category creation failed.'),
         });
     };
 
     const removeCategory = (category: ProductCategory) => {
-        if (!window.confirm(`Delete category "${category.name}"?`)) {
+        setDeletingCategory(category);
+    };
+
+    const confirmDeleteCategory = () => {
+        if (!deletingCategory) {
             return;
         }
 
-        router.delete(destroy.url(category.id));
+        router.delete(destroy.url(deletingCategory.id), {
+            onSuccess: () => {
+                toast.success(`Category "${deletingCategory.name}" deleted.`);
+                setDeletingCategory(null);
+            },
+            onError: () => toast.error('Category deletion failed.'),
+        });
     };
 
     return (
@@ -270,6 +291,24 @@ export default function ProductCategoriesIndex({ categories }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmActionDialog
+                open={deletingCategory !== null}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setDeletingCategory(null);
+                    }
+                }}
+                title="Delete category?"
+                description={
+                    deletingCategory
+                        ? `This will permanently remove "${deletingCategory.name}".`
+                        : ''
+                }
+                confirmLabel="Delete"
+                destructive
+                onConfirm={confirmDeleteCategory}
+            />
         </AdminLayout>
     );
 }

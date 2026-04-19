@@ -1,5 +1,7 @@
 import { router, Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import InputError from '@/components/input-error';
+import ConfirmActionDialog from '@/components/confirm-action-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +19,7 @@ import FarmerLayout from '@/layouts/farmer-layout';
 import { index, update } from '@/routes/farmer/products';
 import { destroy as destroyImage, store as storeImage } from '@/routes/farmer/products/images';
 import type { BreadcrumbItem } from '@/types';
+import { toast } from 'sonner';
 
 type Option = {
     id: number;
@@ -83,6 +86,7 @@ export default function EditProduct({
     units,
     statuses,
 }: Props) {
+    const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
     const form = useForm<ProductFormData>({
         category_id: String(product.category_id),
         unit_id: String(product.unit_id),
@@ -106,7 +110,10 @@ export default function EditProduct({
             status_id: Number(data.status_id),
         }));
 
-        form.put(update.url(product.id));
+        form.put(update.url(product.id), {
+            onSuccess: () => toast.success('Product changes saved.'),
+            onError: () => toast.error('Product update failed.'),
+        });
     };
 
     const uploadImages = () => {
@@ -116,16 +123,30 @@ export default function EditProduct({
 
         imageForm.post(storeImage.url(product.id), {
             forceFormData: true,
-            onSuccess: () => imageForm.reset(),
+            onSuccess: () => {
+                imageForm.reset();
+                toast.success('Images uploaded.');
+            },
+            onError: () => toast.error('Image upload failed.'),
         });
     };
 
     const removeImage = (imageId: number) => {
-        if (!window.confirm('Delete this image?')) {
+        setDeletingImageId(imageId);
+    };
+
+    const confirmDeleteImage = () => {
+        if (deletingImageId === null) {
             return;
         }
 
-        router.delete(destroyImage.url([product.id, imageId]));
+        router.delete(destroyImage.url([product.id, deletingImageId]), {
+            onSuccess: () => {
+                toast.success('Image deleted.');
+                setDeletingImageId(null);
+            },
+            onError: () => toast.error('Image deletion failed.'),
+        });
     };
 
     return (
@@ -370,6 +391,20 @@ export default function EditProduct({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmActionDialog
+                open={deletingImageId !== null}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setDeletingImageId(null);
+                    }
+                }}
+                title="Delete image?"
+                description="This image will be removed from the product gallery."
+                confirmLabel="Delete"
+                destructive
+                onConfirm={confirmDeleteImage}
+            />
         </FarmerLayout>
     );
 }

@@ -1,6 +1,7 @@
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { FarmerSidebar } from '@/components/farmer-sidebar';
+import { NotificationBell } from '@/components/notification-bell';
 import {
     SidebarInset,
     SidebarProvider,
@@ -25,6 +26,9 @@ export default function FarmerLayout({
                     <div className="flex h-16 items-center gap-2 border-b px-4">
                         <SidebarTrigger />
                         <div className="text-sm font-medium">Farmer Panel</div>
+                        <div className="ml-auto">
+                            <NotificationBell />
+                        </div>
                     </div>
 
                     {breadcrumbs.length > 0 && (

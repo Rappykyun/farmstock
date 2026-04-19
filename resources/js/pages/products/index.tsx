@@ -13,7 +13,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
 import { index, show } from '@/routes/products';
+import type { BreadcrumbItem } from '@/types';
 
 type ProductRow = {
     id: number;
@@ -52,6 +54,13 @@ type Props = {
     };
 };
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Products',
+        href: index.url(),
+    },
+];
+
 export default function ProductBrowseIndex({
     filters,
     categories,
@@ -87,7 +96,7 @@ export default function ProductBrowseIndex({
     };
 
     return (
-        <>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Products" />
 
             <div className="min-h-screen bg-background">
@@ -276,6 +285,6 @@ export default function ProductBrowseIndex({
                     </div>
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }
