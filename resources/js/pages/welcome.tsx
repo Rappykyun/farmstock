@@ -56,7 +56,7 @@ export default function Welcome({ canRegister = true }: Props) {
 
     return (
         <>
-            <Head title="Farmstock">
+            <Head title="FarmStock">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700"
@@ -76,7 +76,7 @@ export default function Welcome({ canRegister = true }: Props) {
 
                             <div>
                                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#244131]">
-                                    Farmstock
+                                    FarmStock
                                 </p>
                                 <p className="text-xs text-[#667267]">
                                     Better farm-to-buyer coordination
@@ -118,7 +118,7 @@ export default function Welcome({ canRegister = true }: Props) {
                             </h1>
 
                             <p className="max-w-2xl text-base leading-7 text-[#5c675f] sm:text-lg">
-                                Farmstock helps buyers discover available products and helps farmers
+                                FarmStock helps buyers discover available products and helps farmers
                                 manage listings, stock, and requests in one place.
                             </p>
 

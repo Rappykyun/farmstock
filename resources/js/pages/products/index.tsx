@@ -102,7 +102,7 @@ export default function ProductBrowseIndex({
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
                     <div className="space-y-3">
-                        <Badge variant="outline">Farmstock Catalog</Badge>
+                        <Badge variant="outline">FarmStock Catalog</Badge>
                         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                             Browse fresh farm products
                         </h1>
