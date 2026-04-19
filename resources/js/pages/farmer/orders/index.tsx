@@ -1,5 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
+import { ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Table,
@@ -103,12 +105,17 @@ export default function FarmerOrdersIndex({ requests }: Props) {
                                             <TableCell>PHP {request.total_amount}</TableCell>
                                             <TableCell>{request.created_at ?? 'N/A'}</TableCell>
                                             <TableCell className="text-right">
-                                                <Link
-                                                    href={show.url(request.id)}
-                                                    className="text-sm underline"
+                                                <Button
+                                                    asChild
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="rounded-full px-4"
                                                 >
-                                                    View
-                                                </Link>
+                                                    <Link href={show.url(request.id)}>
+                                                        View order
+                                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                                    </Link>
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}

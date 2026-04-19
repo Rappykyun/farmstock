@@ -1,5 +1,14 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Clock3, Mail, Package2, Phone, UserRound, Wallet } from 'lucide-react';
+import {
+    ArrowLeft,
+    CalendarDays,
+    Clock3,
+    Mail,
+    Package2,
+    Phone,
+    UserRound,
+    Wallet,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,27 +51,30 @@ type StatusFormData = {
     status: 'accepted' | 'rejected' | 'completed';
 };
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Order Details',
-        href: '/farmer/orders',
-    },
-];
-
 export default function FarmerOrderShow({ request }: Props) {
     const form = useForm<StatusFormData>({
         status: 'accepted',
     });
 
-const submitStatus = (status: 'accepted' | 'rejected' | 'completed') => {
-    form.transform((data) => ({
-        ...data,
-        status,
-    }));
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Orders',
+            href: index.url(),
+        },
+        {
+            title: `Order #${request.id}`,
+            href: index.url(),
+        },
+    ];
 
-    form.patch(update.url(request.id));
-};
+    const submitStatus = (status: 'accepted' | 'rejected' | 'completed') => {
+        form.transform((data) => ({
+            ...data,
+            status,
+        }));
 
+        form.patch(update.url(request.id));
+    };
 
     const canAcceptOrReject = request.status_slug === 'pending';
     const canComplete = request.status_slug === 'accepted';
@@ -72,69 +84,104 @@ const submitStatus = (status: 'accepted' | 'rejected' | 'completed') => {
             <Head title={`Order #${request.id}`} />
 
             <div className="space-y-6 p-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-2">
-                        <Link
-                            href={index.url()}
-                            className="text-sm text-muted-foreground underline"
-                        >
-                            Back to orders
-                        </Link>
-                        <h1 className="text-3xl font-semibold tracking-tight">Order #{request.id}</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Review the consumer details, requested items, and update the order status when needed.
-                        </p>
-                    </div>
+                <Card className="overflow-hidden border-border/70 shadow-sm">
+                    <CardContent className="space-y-6 bg-gradient-to-br from-background via-background to-muted/35 p-6 md:p-8">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="space-y-3">
+                                <Button asChild variant="ghost" className="-ml-3 h-9 px-3 text-muted-foreground">
+                                    <Link href={index.url()}>
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        Back to orders
+                                    </Link>
+                                </Button>
 
-                    <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="px-3 py-1">
-                            {request.status ?? 'Unknown'}
-                        </Badge>
-                        <Badge variant="secondary" className="px-3 py-1">
-                            PHP {request.total_amount}
-                        </Badge>
-                    </div>
-                </div>
+                                <div className="space-y-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
+                                            Order
+                                        </Badge>
+                                        <Badge variant="secondary" className="rounded-full px-3 py-1">
+                                            #{request.id}
+                                        </Badge>
+                                    </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Items</p>
-                                <p className="mt-1 text-3xl font-semibold">{request.items.length}</p>
+                                    <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+                                        Order #{request.id}
+                                    </h1>
+                                    <p className="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+                                        Review the consumer details, inspect the requested items,
+                                        and update the order status when needed.
+                                    </p>
+                                </div>
                             </div>
-                            <Package2 className="h-5 w-5 text-muted-foreground" />
-                        </CardContent>
-                    </Card>
 
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Status</p>
-                                <p className="mt-1 text-3xl font-semibold">{request.status ?? 'Unknown'}</p>
+                            <div className="grid min-w-full gap-3 sm:grid-cols-2 lg:min-w-[260px] lg:max-w-xs">
+                                <div className="rounded-2xl border bg-background/85 p-4 shadow-sm backdrop-blur">
+                                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                                        Status
+                                    </p>
+                                    <p className="mt-2 text-lg font-semibold">
+                                        {request.status ?? 'Unknown'}
+                                    </p>
+                                </div>
+                                <div className="rounded-2xl border bg-background/85 p-4 shadow-sm backdrop-blur">
+                                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                                        Total
+                                    </p>
+                                    <p className="mt-2 text-lg font-semibold">
+                                        PHP {request.total_amount}
+                                    </p>
+                                </div>
                             </div>
-                            <Clock3 className="h-5 w-5 text-muted-foreground" />
-                        </CardContent>
-                    </Card>
+                        </div>
 
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Amount</p>
-                                <p className="mt-1 text-3xl font-semibold">PHP {request.total_amount}</p>
-                            </div>
-                            <Wallet className="h-5 w-5 text-muted-foreground" />
-                        </CardContent>
-                    </Card>
-                </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <Card className="border-border/70 shadow-none">
+                                <CardContent className="flex items-center justify-between p-5">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Items</p>
+                                        <p className="mt-1 text-3xl font-semibold">{request.items.length}</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-muted p-3">
+                                        <Package2 className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-border/70 shadow-none">
+                                <CardContent className="flex items-center justify-between p-5">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Status</p>
+                                        <p className="mt-1 text-3xl font-semibold">{request.status ?? 'Unknown'}</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-muted p-3">
+                                        <Clock3 className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-border/70 shadow-none">
+                                <CardContent className="flex items-center justify-between p-5">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Total Amount</p>
+                                        <p className="mt-1 text-3xl font-semibold">PHP {request.total_amount}</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-muted p-3">
+                                        <Wallet className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-                    <Card>
-                        <CardHeader className="border-b">
+                    <Card className="border-border/70 shadow-sm">
+                        <CardHeader className="border-b bg-muted/20">
                             <CardTitle>Requested Items</CardTitle>
                         </CardHeader>
 
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 p-5">
                             {request.items.map((item) => (
                                 <div key={item.id} className="rounded-xl border bg-card p-4">
                                     <div className="flex items-start justify-between gap-4">
@@ -166,12 +213,12 @@ const submitStatus = (status: 'accepted' | 'rejected' | 'completed') => {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="border-b">
+                    <Card className="border-border/70 shadow-sm">
+                        <CardHeader className="border-b bg-muted/20">
                             <CardTitle>Order Summary</CardTitle>
                         </CardHeader>
 
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 p-5">
                             <div>
                                 <p className="text-sm text-muted-foreground">Status</p>
                                 <Badge variant="outline">
@@ -205,9 +252,12 @@ const submitStatus = (status: 'accepted' | 'rejected' | 'completed') => {
                                 <p>{request.notes || 'No notes provided.'}</p>
                             </div>
 
-                            <div>
-                                <p className="text-sm text-muted-foreground">Created At</p>
-                                <p>{request.created_at ?? 'N/A'}</p>
+                            <div className="rounded-2xl border bg-background p-4">
+                                <div className="flex items-center gap-2 text-sm font-medium">
+                                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                                    Created At
+                                </div>
+                                <p className="mt-3 text-sm">{request.created_at ?? 'N/A'}</p>
                             </div>
 
                             <div className="border-t pt-4">

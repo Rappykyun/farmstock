@@ -1,5 +1,6 @@
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { FarmerSidebar } from '@/components/farmer-sidebar';
 import { NotificationBell } from '@/components/notification-bell';
 import {
@@ -32,8 +33,8 @@ export default function FarmerLayout({
                     </div>
 
                     {breadcrumbs.length > 0 && (
-                        <div className="border-b px-4 py-3 text-sm text-muted-foreground">
-                            {breadcrumbs[breadcrumbs.length - 1]?.title}
+                        <div className="border-b bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                            <Breadcrumbs breadcrumbs={breadcrumbs} />
                         </div>
                     )}
 
