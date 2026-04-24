@@ -30,6 +30,12 @@ class ReportController extends Controller
                 'farmer_users' => User::role('farmer')->count(),
                 'consumer_users' => User::role('consumer')->count(),
             ],
+            'analytics' => [
+                'user_role_breakdown' => $this->userRoleBreakdown(),
+                'user_status_breakdown' => $this->userStatusBreakdown(),
+                'top_farmers_by_value' => $this->topFarmersByValue($from, $to),
+                'top_farmers_by_products' => $this->topFarmersByProducts($from, $to),
+            ],
             'inventorySummary' => $this->inventorySummary($from, $to),
             'orderVolume' => $this->orderVolume($from, $to),
         ]);
@@ -104,6 +110,72 @@ class ReportController extends Controller
                 'request_count' => (int) $row->request_count,
                 'total_amount' => number_format((float) $row->total_amount, 2, '.', ''),
             ]);
+    }
+
+    private function userRoleBreakdown(): array
+    {
+        return [
+            [
+                'role' => 'Admins',
+                'total' => User::role('admin')->count(),
+            ],
+            [
+                'role' => 'Farmers',
+                'total' => User::role('farmer')->count(),
+            ],
+            [
+                'role' => 'Consumers',
+                'total' => User::role('consumer')->count(),
+            ],
+        ];
+    }
+
+    private function userStatusBreakdown(): array
+    {
+        return [
+            [
+                'role' => 'Admins',
+                'active' => User::role('admin')->where('is_active', true)->count(),
+                'inactive' => User::role('admin')->where('is_active', false)->count(),
+            ],
+            [
+                'role' => 'Farmers',
+                'active' => User::role('farmer')->where('is_active', true)->count(),
+                'inactive' => User::role('farmer')->where('is_active', false)->count(),
+            ],
+            [
+                'role' => 'Consumers',
+                'active' => User::role('consumer')->where('is_active', true)->count(),
+                'inactive' => User::role('consumer')->where('is_active', false)->count(),
+            ],
+        ];
+    }
+
+    private function topFarmersByValue(string $from, string $to)
+    {
+        return $this->inventorySummary($from, $to)
+            ->sortByDesc(fn (array $row) => (float) $row['estimated_stock_value'])
+            ->take(6)
+            ->values()
+            ->map(fn (array $row) => [
+                'farmer_name' => $row['farmer_name'],
+                'estimated_stock_value' => $row['estimated_stock_value'],
+            ])
+            ->all();
+    }
+
+    private function topFarmersByProducts(string $from, string $to)
+    {
+        return $this->inventorySummary($from, $to)
+            ->sortByDesc('product_count')
+            ->take(6)
+            ->values()
+            ->map(fn (array $row) => [
+                'farmer_name' => $row['farmer_name'],
+                'product_count' => $row['product_count'],
+                'active_products' => $row['active_products'],
+            ])
+            ->all();
     }
 
     private function exportUsersCsv(): StreamedResponse

@@ -15,6 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
     'farmer_id',
     'status_id',
     'notes',
+    'rejection_reason',
     'total_amount',
 ])]
 class OrderRequest extends Model
@@ -56,6 +57,7 @@ class OrderRequest extends Model
             'farmer_id',
             'status_id',
             'notes',
+            'rejection_reason',
             'total_amount',
         ])
         ->logOnlyDirty()

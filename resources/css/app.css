@@ -214,6 +214,85 @@
     }
 }
 
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    html,
+    body {
+        background: white !important;
+    }
+
+    body {
+        color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .report-print-page {
+        max-width: none !important;
+    }
+
+    .report-print-header {
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid oklch(0.9 0 0);
+        padding-bottom: 0.75rem;
+    }
+
+    .report-print-grid {
+        gap: 0.75rem !important;
+    }
+
+    .report-print-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border-color: oklch(0.85 0 0) !important;
+        box-shadow: none !important;
+        background: white !important;
+    }
+
+    .report-print-card [data-slot="chart"] {
+        min-height: 10rem !important;
+        height: 10rem !important;
+        aspect-ratio: auto !important;
+    }
+
+    .report-print-card [data-slot="chart"] .recharts-legend-wrapper {
+        font-size: 11px !important;
+    }
+
+    .report-print-card .recharts-cartesian-axis-tick-value,
+    .report-print-card .recharts-default-tooltip {
+        font-size: 11px !important;
+    }
+
+    .report-print-table {
+        padding-top: 0 !important;
+    }
+
+    .report-print-table table {
+        width: 100%;
+        font-size: 11px;
+        border-collapse: collapse;
+    }
+
+    .report-print-table thead {
+        display: table-header-group;
+    }
+
+    .report-print-table tr {
+        page-break-inside: avoid;
+    }
+
+    .report-print-table th,
+    .report-print-table td {
+        padding: 0.45rem 0.5rem !important;
+        vertical-align: top;
+    }
+}
+
 @theme inline {
     --font-heading:
         var(--font-sans);

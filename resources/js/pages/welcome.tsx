@@ -122,31 +122,16 @@ export default function Welcome({ canRegister = true }: Props) {
                                 manage listings, stock, and requests in one place.
                             </p>
 
-                            <div className="flex flex-wrap gap-3 pt-2">
-                                {auth.user ? (
+                            {auth.user && (
+                                <div className="flex flex-wrap gap-3 pt-2">
                                     <Button asChild size="lg" className="bg-[#244131] hover:bg-[#1c3326]">
                                         <Link href={dashboard()}>
                                             Open Dashboard
                                             <ArrowRight className="ml-2 h-4 w-4" />
                                         </Link>
                                     </Button>
-                                ) : (
-                                    <>
-                                        <Button asChild size="lg" className="bg-[#244131] hover:bg-[#1c3326]">
-                                            <Link href={login()}>
-                                                Get Started
-                                                <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-
-                                        {canRegister && (
-                                            <Button asChild size="lg" variant="outline">
-                                                <Link href={register()}>Create Account</Link>
-                                            </Button>
-                                        )}
-                                    </>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
 
                         <Card className="border-black/5 bg-white/80 shadow-none">

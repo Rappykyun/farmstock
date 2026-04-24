@@ -37,6 +37,7 @@ class OrderRequestController extends Controller
                 'status_color' => $orderRequest->status?->color,
                 'total_amount' => $orderRequest->total_amount,
                 'notes' => $orderRequest->notes,
+                'rejection_reason' => $orderRequest->rejection_reason,
                 'created_at' => $orderRequest->created_at?->toDateTimeString(),
                 'items' => $orderRequest->items->map(fn ($item) => [
                     'id' => $item->id,
@@ -133,6 +134,7 @@ $farmer?->notify(new NewOrderRequestNotification($orderRequest));
                 'status' => $orderRequest->status?->name,
                 'status_color' => $orderRequest->status?->color,
                 'notes' => $orderRequest->notes,
+                'rejection_reason' => $orderRequest->rejection_reason,
                 'total_amount' => $orderRequest->total_amount,
                 'created_at' => $orderRequest->created_at?->toDateTimeString(),
                 'items' => $orderRequest->items->map(fn ($item) => [

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderRequest;
+use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Status;
 use App\Models\Unit;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,22 +18,37 @@ class AdminDashboardController extends Controller
 {
     public function index(): Response
     {
+        $adminUsers = User::role('admin')->count();
+        $farmerUsers = User::role('farmer')->count();
+        $consumerUsers = User::role('consumer')->count();
+
         return Inertia::render('admin/dashboard', [
             'stats' => [
                 'total_users' => User::count(),
-                'admin_users' => User::role('admin')->count(),
-                'farmer_users' => User::role('farmer')->count(),
-                'consumer_users' => User::role('consumer')->count(),
-                'total_products' => class_exists(\App\Models\Product::class)
-                    ? \App\Models\Product::query()->count()
-                    : 0,
-                'pending_orders' => 0,
+                'admin_users' => $adminUsers,
+                'farmer_users' => $farmerUsers,
+                'consumer_users' => $consumerUsers,
+                'total_products' => Product::count(),
+                'pending_orders' => OrderRequest::query()
+                    ->whereHas('status', fn ($query) => $query->where('slug', 'pending'))
+                    ->count(),
                 'total_categories' => ProductCategory::count(),
                 'total_units' => Unit::count(),
                 'total_statuses' => Status::count(),
             ],
             'recentActivity' => $this->recentActivity(),
             'orderVolume' => $this->orderVolume(),
+            'userBreakdown' => [
+                ['role' => 'Admins', 'total' => $adminUsers],
+                ['role' => 'Farmers', 'total' => $farmerUsers],
+                ['role' => 'Consumers', 'total' => $consumerUsers],
+            ],
+            'catalogBreakdown' => [
+                ['label' => 'Products', 'total' => Product::count()],
+                ['label' => 'Categories', 'total' => ProductCategory::count()],
+                ['label' => 'Units', 'total' => Unit::count()],
+                ['label' => 'Statuses', 'total' => Status::count()],
+            ],
         ]);
     }
 
@@ -96,10 +114,19 @@ class AdminDashboardController extends Controller
 
     private function orderVolume(): array
     {
+        $dailyOrders = OrderRequest::query()
+            ->selectRaw('DATE(created_at) as report_date, COUNT(*) as orders')
+            ->whereBetween('created_at', [
+                now()->subDays(6)->startOfDay(),
+                now()->endOfDay(),
+            ])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('orders', 'report_date');
+
         return collect(range(6, 0))
             ->map(fn(int $offset) => [
-                'date' => now()->subDays($offset)->format('M d'),
-                'orders' => 0,
+                'date' => now()->subDays($offset)->toDateString(),
+                'orders' => (int) ($dailyOrders[now()->subDays($offset)->toDateString()] ?? 0),
             ])
             ->all();
     }

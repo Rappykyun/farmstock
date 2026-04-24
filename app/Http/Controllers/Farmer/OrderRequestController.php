@@ -39,6 +39,7 @@ class OrderRequestController extends Controller
                 'status_slug' => $orderRequest->status?->slug,
                 'status_color' => $orderRequest->status?->color,
                 'notes' => $orderRequest->notes,
+                'rejection_reason' => $orderRequest->rejection_reason,
                 'total_amount' => $orderRequest->total_amount,
                 'created_at' => $orderRequest->created_at?->toDateTimeString(),
                 'items' => $orderRequest->items->map(fn ($item) => [
@@ -81,6 +82,7 @@ class OrderRequestController extends Controller
                 'status_slug' => $orderRequest->status?->slug,
                 'status_color' => $orderRequest->status?->color,
                 'notes' => $orderRequest->notes,
+                'rejection_reason' => $orderRequest->rejection_reason,
                 'total_amount' => $orderRequest->total_amount,
                 'created_at' => $orderRequest->created_at?->toDateTimeString(),
                 'items' => $orderRequest->items->map(fn ($item) => [
@@ -108,7 +110,8 @@ class OrderRequestController extends Controller
         ]);
 
         $currentStatus = $orderRequest->status?->slug;
-        $nextStatus = $request->validated()['status'];
+        $validated = $request->validated();
+        $nextStatus = $validated['status'];
 
         $this->ensureValidTransition($currentStatus, $nextStatus);
 
@@ -123,7 +126,7 @@ class OrderRequestController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($request, $orderRequest, $currentStatus, $nextStatus, $status): void {
+        DB::transaction(function () use ($request, $orderRequest, $currentStatus, $nextStatus, $status, $validated): void {
             if ($currentStatus === 'pending' && $nextStatus === 'accepted') {
                 foreach ($orderRequest->items as $item) {
                     $product = $item->product;
@@ -152,17 +155,21 @@ class OrderRequestController extends Controller
 
             $orderRequest->update([
                 'status_id' => $status->id,
+                'rejection_reason' => $nextStatus === 'rejected'
+                    ? $validated['rejection_reason']
+                    : null,
             ]);
         });
         $orderRequest->refresh()->load(['status', 'consumer']);
 
-$orderRequest->consumer?->notify(
-    new OrderRequestStatusUpdatedNotification(
-        $orderRequest,
-        $orderRequest->status?->name ?? $nextStatus,
-        $orderRequest->status?->slug ?? $nextStatus,
-    )
-);
+        $orderRequest->consumer?->notify(
+            new OrderRequestStatusUpdatedNotification(
+                $orderRequest,
+                $orderRequest->status?->name ?? $nextStatus,
+                $orderRequest->status?->slug ?? $nextStatus,
+                $orderRequest->rejection_reason,
+            )
+        );
 
 
         return to_route('farmer.orders.show', $orderRequest);

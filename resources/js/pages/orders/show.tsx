@@ -28,6 +28,7 @@ type Props = {
         status: string | null;
         status_color: string | null;
         notes: string | null;
+        rejection_reason: string | null;
         total_amount: string;
         created_at: string | null;
         items: Array<{
@@ -259,6 +260,18 @@ export default function OrderRequestShow({ request }: Props) {
                                             {request.notes || 'No notes provided for this request.'}
                                         </p>
                                     </div>
+
+                                    {request.rejection_reason && (
+                                        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+                                            <div className="flex items-center gap-2 text-sm font-medium">
+                                                <FileText className="h-4 w-4 text-destructive" />
+                                                Farmer rejection reason
+                                            </div>
+                                            <p className="mt-3 text-sm leading-6 text-foreground">
+                                                {request.rejection_reason}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     <div className="rounded-2xl border bg-background p-4">
                                         <div className="flex items-center gap-2 text-sm font-medium">

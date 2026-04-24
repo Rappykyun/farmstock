@@ -9,9 +9,12 @@ import {
     UserRound,
     Wallet,
 } from 'lucide-react';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import FarmerLayout from '@/layouts/farmer-layout';
 import { index, update } from '@/routes/farmer/orders';
 import type { BreadcrumbItem } from '@/types';
@@ -41,6 +44,7 @@ type Props = {
         status_slug: string | null;
         status_color: string | null;
         notes: string | null;
+        rejection_reason: string | null;
         total_amount: string;
         created_at: string | null;
         items: FarmerOrderItem[];
@@ -49,11 +53,13 @@ type Props = {
 
 type StatusFormData = {
     status: 'accepted' | 'rejected' | 'completed';
+    rejection_reason: string;
 };
 
 export default function FarmerOrderShow({ request }: Props) {
     const form = useForm<StatusFormData>({
         status: 'accepted',
+        rejection_reason: request.rejection_reason ?? '',
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -71,6 +77,8 @@ export default function FarmerOrderShow({ request }: Props) {
         form.transform((data) => ({
             ...data,
             status,
+            rejection_reason:
+                status === 'rejected' ? data.rejection_reason.trim() : '',
         }));
 
         form.patch(update.url(request.id));
@@ -252,6 +260,15 @@ export default function FarmerOrderShow({ request }: Props) {
                                 <p>{request.notes || 'No notes provided.'}</p>
                             </div>
 
+                            {request.rejection_reason && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Rejection reason</p>
+                                    <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-sm leading-6">
+                                        {request.rejection_reason}
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="rounded-2xl border bg-background p-4">
                                 <div className="flex items-center gap-2 text-sm font-medium">
                                     <CalendarDays className="h-4 w-4 text-muted-foreground" />
@@ -270,6 +287,27 @@ export default function FarmerOrderShow({ request }: Props) {
                             <div className="flex flex-col gap-2 border-t pt-4">
                                 {canAcceptOrReject && (
                                     <>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="rejection_reason">
+                                                Rejection description
+                                            </Label>
+                                            <Textarea
+                                                id="rejection_reason"
+                                                value={form.data.rejection_reason}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'rejection_reason',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="Explain why this order cannot be fulfilled."
+                                                rows={4}
+                                            />
+                                            <InputError
+                                                message={form.errors.rejection_reason}
+                                            />
+                                        </div>
+
                                         <Button
                                             type="button"
                                             onClick={() => submitStatus('accepted')}
@@ -305,6 +343,8 @@ export default function FarmerOrderShow({ request }: Props) {
                                         No further status actions available.
                                     </p>
                                 )}
+
+                                <InputError message={form.errors.status} />
                             </div>
                         </CardContent>
                     </Card>

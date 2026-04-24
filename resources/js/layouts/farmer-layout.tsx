@@ -22,9 +22,11 @@ export default function FarmerLayout({
     return (
         <AppShell>
             <SidebarProvider>
-                <FarmerSidebar />
-                <SidebarInset>
-                    <div className="flex h-16 items-center gap-2 border-b px-4">
+                <div className="print:hidden">
+                    <FarmerSidebar />
+                </div>
+                <SidebarInset className="print:m-0 print:min-h-0 print:rounded-none print:shadow-none">
+                    <div className="flex h-16 items-center gap-2 border-b px-4 print:hidden">
                         <SidebarTrigger />
                         <div className="text-sm font-medium">Farmer Panel</div>
                         <div className="ml-auto">
@@ -33,7 +35,7 @@ export default function FarmerLayout({
                     </div>
 
                     {breadcrumbs.length > 0 && (
-                        <div className="border-b bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="border-b bg-muted/20 px-4 py-3 text-sm text-muted-foreground print:hidden">
                             <Breadcrumbs breadcrumbs={breadcrumbs} />
                         </div>
                     )}

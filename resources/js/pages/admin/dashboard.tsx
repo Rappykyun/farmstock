@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -32,6 +32,14 @@ type Props = {
         date: string;
         orders: number;
     }>;
+    userBreakdown: Array<{
+        role: string;
+        total: number;
+    }>;
+    catalogBreakdown: Array<{
+        label: string;
+        total: number;
+    }>;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,17 +49,39 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const chartConfig = {
+const orderVolumeChartConfig = {
     orders: {
         label: 'Orders',
         color: 'var(--chart-1)',
     },
 } satisfies ChartConfig;
 
+const userBreakdownChartConfig = {
+    total: {
+        label: 'Users',
+        color: 'var(--chart-2)',
+    },
+} satisfies ChartConfig;
+
+const catalogBreakdownChartConfig = {
+    total: {
+        label: 'Records',
+        color: 'var(--chart-3)',
+    },
+} satisfies ChartConfig;
+
+const formatChartDate = (value: string) =>
+    new Intl.DateTimeFormat('en-PH', {
+        month: 'short',
+        day: 'numeric',
+    }).format(new Date(`${value}T00:00:00`));
+
 export default function AdminDashboard({
     stats,
     recentActivity,
     orderVolume,
+    userBreakdown,
+    catalogBreakdown,
 }: Props) {
     return (
         <AdminLayout breadcrumbs={breadcrumbs}>
@@ -85,7 +115,7 @@ export default function AdminDashboard({
                         <CardContent>
                             <div className="text-3xl font-semibold">{stats.total_products}</div>
                             <p className="mt-2 text-sm text-muted-foreground">
-                                Will grow once farmer product registration is built
+                                Total product listings on the platform
                             </p>
                         </CardContent>
                     </Card>
@@ -97,7 +127,7 @@ export default function AdminDashboard({
                         <CardContent>
                             <div className="text-3xl font-semibold">{stats.pending_orders}</div>
                             <p className="mt-2 text-sm text-muted-foreground">
-                                Order module not implemented yet
+                                Open order requests awaiting action
                             </p>
                         </CardContent>
                     </Card>
@@ -122,54 +152,105 @@ export default function AdminDashboard({
                     </Card>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Orders Over Time</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <ChartContainer config={chartConfig} className="h-[280px] w-full">
-                                <BarChart accessibilityLayer data={orderVolume}>
+                            <ChartContainer config={orderVolumeChartConfig} className="min-h-[280px] w-full">
+                                <LineChart accessibilityLayer data={orderVolume}>
                                     <CartesianGrid vertical={false} />
                                     <XAxis
                                         dataKey="date"
                                         tickLine={false}
                                         axisLine={false}
-                                        tickMargin={8}
+                                        tickMargin={10}
+                                        tickFormatter={formatChartDate}
                                     />
+                                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
                                     <ChartTooltip
                                         cursor={false}
-                                        content={<ChartTooltipContent indicator="dashed" />}
+                                        content={
+                                            <ChartTooltipContent
+                                                indicator="line"
+                                                labelFormatter={(label) =>
+                                                    formatChartDate(String(label))
+                                                }
+                                            />
+                                        }
                                     />
-                                    <Bar
+                                    <Line
+                                        type="monotone"
                                         dataKey="orders"
-                                        fill="var(--color-orders)"
-                                        radius={8}
+                                        stroke="var(--color-orders)"
+                                        strokeWidth={3}
+                                        dot={false}
                                     />
-                                </BarChart>
+                                </LineChart>
                             </ChartContainer>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>User Breakdown</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <div className="text-2xl font-semibold">{stats.admin_users}</div>
-                                <p className="text-sm text-muted-foreground">Admins</p>
-                            </div>
-                            <div>
-                                <div className="text-2xl font-semibold">{stats.farmer_users}</div>
-                                <p className="text-sm text-muted-foreground">Farmers</p>
-                            </div>
-                            <div>
-                                <div className="text-2xl font-semibold">{stats.consumer_users}</div>
-                                <p className="text-sm text-muted-foreground">Consumers</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="grid gap-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>User Breakdown</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer
+                                    config={userBreakdownChartConfig}
+                                    className="min-h-[220px] w-full"
+                                >
+                                    <BarChart accessibilityLayer data={userBreakdown}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="role"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={10}
+                                        />
+                                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Bar
+                                            dataKey="total"
+                                            fill="var(--color-total)"
+                                            radius={8}
+                                        />
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Platform Records</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer
+                                    config={catalogBreakdownChartConfig}
+                                    className="min-h-[220px] w-full"
+                                >
+                                    <BarChart accessibilityLayer data={catalogBreakdown}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="label"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={10}
+                                        />
+                                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Bar
+                                            dataKey="total"
+                                            fill="var(--color-total)"
+                                            radius={8}
+                                        />
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 <Card>

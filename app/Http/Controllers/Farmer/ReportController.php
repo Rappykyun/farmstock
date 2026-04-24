@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Farmer;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryLog;
 use App\Models\OrderRequest;
+use App\Models\OrderRequestItem;
 use App\Models\Product;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -29,6 +30,9 @@ class ReportController extends Controller
                 ->where('farmer_id', auth()->id())
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'analytics' => [
+                'top_products' => $this->topProducts($from, $to, $productId),
+            ],
             'inventorySummary' => $this->inventorySummary($from, $to),
             'orderHistory' => $this->orderHistory($from, $to),
             'stockMovements' => $this->stockMovements($from, $to, $productId),
@@ -137,6 +141,29 @@ class ReportController extends Controller
                 'logged_by' => $log->loggedBy?->name,
                 'created_at' => $log->created_at?->toDateTimeString(),
             ]);
+    }
+
+    private function topProducts(string $from, string $to, string $productId = '')
+    {
+        return OrderRequestItem::query()
+            ->selectRaw('product_id, SUM(quantity) as total_quantity, SUM(subtotal) as total_amount')
+            ->with('product:id,name')
+            ->when($productId !== '', fn ($query) => $query->where('product_id', $productId))
+            ->whereHas('orderRequest', function ($query) use ($from, $to) {
+                $query
+                    ->where('farmer_id', auth()->id())
+                    ->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59']);
+            })
+            ->groupBy('product_id')
+            ->orderByDesc('total_quantity')
+            ->limit(6)
+            ->get()
+            ->map(fn (OrderRequestItem $item) => [
+                'product_name' => $item->product?->name ?? 'Unknown product',
+                'total_quantity' => number_format((float) $item->total_quantity, 2, '.', ''),
+                'total_amount' => number_format((float) $item->total_amount, 2, '.', ''),
+            ])
+            ->values();
     }
 
     private function exportInventoryCsv(string $from, string $to): StreamedResponse
