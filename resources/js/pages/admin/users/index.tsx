@@ -1,7 +1,17 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import {
+    CalendarDays,
+    Eye,
+    Mail,
+    MapPin,
+    Phone,
+    Settings,
+    Store,
+    UserRound,
+} from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import {
     Table,
     TableBody,
@@ -44,6 +55,8 @@ type UserRow = {
     address: string | null;
     contact_number: string | null;
     farm_name: string | null;
+    farm_details: string | null;
+    avatar: string | null;
     is_active: boolean;
     role: string | null;
     created_at: string | null;
@@ -70,13 +83,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function UsersIndex({
-    users,
-    availableRoles,
-    filters,
-}: Props) {
+export default function UsersIndex({ users, availableRoles, filters }: Props) {
     const [open, setOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+    const [profileUser, setProfileUser] = useState<UserRow | null>(null);
 
     const form = useForm<UserFormData>({
         role: 'consumer',
@@ -91,13 +101,49 @@ export default function UsersIndex({
             .slice(0, 2)
             .toUpperCase();
 
+    const roleLabel = (role: string | null) => role ?? 'unassigned';
+
+    const profileTitle = (user: UserRow) => {
+        if (user.role === 'farmer') {
+            return user.farm_name || user.name;
+        }
+
+        return user.name;
+    };
+
+    const profileSubtitle = (user: UserRow) => {
+        if (user.role === 'farmer') {
+            return 'Farmer profile';
+        }
+
+        if (user.role === 'consumer') {
+            return 'Consumer profile';
+        }
+
+        return 'User profile';
+    };
+
+    const formattedDate = (date: string | null) => {
+        if (!date) {
+            return 'Not available';
+        }
+
+        return new Intl.DateTimeFormat(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        }).format(new Date(date));
+    };
+
     const applyFilters = (
         nextFilters: Record<string, string | null | undefined>,
     ) => {
         router.get(
             index.url({
                 query: Object.fromEntries(
-                    Object.entries(nextFilters).filter(([, value]) => value !== '' && value !== null),
+                    Object.entries(nextFilters).filter(
+                        ([, value]) => value !== '' && value !== null,
+                    ),
                 ),
             }),
             {},
@@ -143,12 +189,13 @@ export default function UsersIndex({
         <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Users" />
 
-            <div className="space-y-6 p-4">
+            <div className="flex flex-col gap-6 p-4">
                 <div className="flex items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-semibold">Users</h1>
                         <p className="text-sm text-muted-foreground">
-                            Review user accounts, filter by role, and update account access.
+                            Review user accounts, filter by role, and update
+                            account access.
                         </p>
                     </div>
                 </div>
@@ -171,7 +218,9 @@ export default function UsersIndex({
                                     <SelectValue placeholder="Filter by role" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All roles</SelectItem>
+                                    <SelectItem value="all">
+                                        All roles
+                                    </SelectItem>
                                     {availableRoles.map((role) => (
                                         <SelectItem key={role} value={role}>
                                             {role}
@@ -193,9 +242,13 @@ export default function UsersIndex({
                                     <SelectValue placeholder="Filter by status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All statuses</SelectItem>
+                                    <SelectItem value="all">
+                                        All statuses
+                                    </SelectItem>
                                     <SelectItem value="true">Active</SelectItem>
-                                    <SelectItem value="false">Inactive</SelectItem>
+                                    <SelectItem value="false">
+                                        Inactive
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -215,7 +268,9 @@ export default function UsersIndex({
                                         <TableHead>Status</TableHead>
                                         <TableHead>Contact</TableHead>
                                         <TableHead>Farm</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                        <TableHead className="text-right">
+                                            Actions
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
 
@@ -225,12 +280,24 @@ export default function UsersIndex({
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <Avatar>
+                                                        {user.avatar && (
+                                                            <AvatarImage
+                                                                src={
+                                                                    user.avatar
+                                                                }
+                                                                alt={user.name}
+                                                            />
+                                                        )}
                                                         <AvatarFallback>
-                                                            {initials(user.name)}
+                                                            {initials(
+                                                                user.name,
+                                                            )}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <div className="font-medium">{user.name}</div>
+                                                        <div className="font-medium">
+                                                            {user.name}
+                                                        </div>
                                                         <div className="text-sm text-muted-foreground">
                                                             {user.email}
                                                         </div>
@@ -252,28 +319,53 @@ export default function UsersIndex({
                                                             : 'secondary'
                                                     }
                                                 >
-                                                    {user.is_active ? 'Active' : 'Inactive'}
+                                                    {user.is_active
+                                                        ? 'Active'
+                                                        : 'Inactive'}
                                                 </Badge>
                                             </TableCell>
 
                                             <TableCell className="text-muted-foreground">
-                                                <div>{user.contact_number || 'No contact number'}</div>
-                                                <div className="text-xs">{user.address || 'No address'}</div>
+                                                <div>
+                                                    {user.contact_number ||
+                                                        'No contact number'}
+                                                </div>
+                                                <div className="text-xs">
+                                                    {user.address ||
+                                                        'No address'}
+                                                </div>
                                             </TableCell>
 
                                             <TableCell className="text-muted-foreground">
-                                                {user.farm_name || 'Not a farmer'}
+                                                {user.farm_name ||
+                                                    'Not a farmer'}
                                             </TableCell>
 
-                                            <TableCell className="text-right">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => openEditModal(user)}
-                                                >
-                                                    Manage
-                                                </Button>
+                                            <TableCell>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            setProfileUser(user)
+                                                        }
+                                                    >
+                                                        <Eye data-icon="inline-start" />
+                                                        View
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            openEditModal(user)
+                                                        }
+                                                    >
+                                                        <Settings data-icon="inline-start" />
+                                                        Manage
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -296,8 +388,12 @@ export default function UsersIndex({
                     {editingUser && (
                         <div className="grid gap-4">
                             <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-                                <div className="font-medium">{editingUser.name}</div>
-                                <div className="text-muted-foreground">{editingUser.email}</div>
+                                <div className="font-medium">
+                                    {editingUser.name}
+                                </div>
+                                <div className="text-muted-foreground">
+                                    {editingUser.email}
+                                </div>
                             </div>
 
                             <div className="grid gap-2">
@@ -327,10 +423,15 @@ export default function UsersIndex({
                                     id="is_active"
                                     checked={form.data.is_active}
                                     onCheckedChange={(checked) =>
-                                        form.setData('is_active', checked === true)
+                                        form.setData(
+                                            'is_active',
+                                            checked === true,
+                                        )
                                     }
                                 />
-                                <Label htmlFor="is_active">Active account</Label>
+                                <Label htmlFor="is_active">
+                                    Active account
+                                </Label>
                             </div>
                             <InputError message={form.errors.is_active} />
 
@@ -367,6 +468,146 @@ export default function UsersIndex({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <Dialog
+                open={profileUser !== null}
+                onOpenChange={(nextOpen) => !nextOpen && setProfileUser(null)}
+            >
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Profile Details</DialogTitle>
+                        <DialogDescription>
+                            Review contact and profile information for this
+                            account.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {profileUser && (
+                        <div className="flex flex-col gap-5">
+                            <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="size-14">
+                                        {profileUser.avatar && (
+                                            <AvatarImage
+                                                src={profileUser.avatar}
+                                                alt={profileUser.name}
+                                            />
+                                        )}
+                                        <AvatarFallback className="text-base">
+                                            {initials(profileUser.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+
+                                    <div className="min-w-0">
+                                        <div className="truncate text-lg font-semibold">
+                                            {profileTitle(profileUser)}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            {profileSubtitle(profileUser)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    <Badge variant="outline">
+                                        {roleLabel(profileUser.role)}
+                                    </Badge>
+                                    <Badge
+                                        variant={
+                                            profileUser.is_active
+                                                ? 'default'
+                                                : 'secondary'
+                                        }
+                                    >
+                                        {profileUser.is_active
+                                            ? 'Active'
+                                            : 'Inactive'}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <ProfileItem
+                                    icon={UserRound}
+                                    label="Name"
+                                    value={profileUser.name}
+                                />
+                                <ProfileItem
+                                    icon={Mail}
+                                    label="Email"
+                                    value={profileUser.email}
+                                />
+                                <ProfileItem
+                                    icon={Phone}
+                                    label="Contact number"
+                                    value={
+                                        profileUser.contact_number ||
+                                        'No contact number'
+                                    }
+                                />
+                                <ProfileItem
+                                    icon={CalendarDays}
+                                    label="Joined"
+                                    value={formattedDate(
+                                        profileUser.created_at,
+                                    )}
+                                />
+                                <ProfileItem
+                                    icon={MapPin}
+                                    label="Address"
+                                    value={profileUser.address || 'No address'}
+                                />
+                                <ProfileItem
+                                    icon={Store}
+                                    label="Farm"
+                                    value={
+                                        profileUser.farm_name || 'Not a farmer'
+                                    }
+                                />
+                            </div>
+
+                            {profileUser.role === 'farmer' && (
+                                <>
+                                    <Separator />
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Farm details
+                                        </div>
+                                        <p className="rounded-lg border bg-background p-3 text-sm text-muted-foreground">
+                                            {profileUser.farm_details ||
+                                                'No farm details provided.'}
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </AdminLayout>
+    );
+}
+
+function ProfileItem({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: typeof UserRound;
+    label: string;
+    value: string;
+}) {
+    return (
+        <div className="flex gap-3 rounded-lg border p-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <Icon />
+            </div>
+            <div className="min-w-0">
+                <div className="text-xs font-medium text-muted-foreground">
+                    {label}
+                </div>
+                <div className="text-sm break-words">{value}</div>
+            </div>
+        </div>
     );
 }

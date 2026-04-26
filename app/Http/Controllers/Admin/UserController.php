@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,6 +37,12 @@ class UserController extends Controller
                     'address' => $user->address,
                     'contact_number' => $user->contact_number,
                     'farm_name' => $user->farm_name,
+                    'farm_details' => $user->farm_details,
+                    'avatar' => $user->avatar
+                        ? (str_starts_with($user->avatar, 'http')
+                            ? $user->avatar
+                            : Storage::disk('public')->url($user->avatar))
+                        : null,
                     'is_active' => $user->is_active,
                     'role' => $user->getRoleNames()->first(),
                     'created_at' => $user->created_at?->toDateTimeString(),
