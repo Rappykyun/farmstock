@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ClipboardList, LayoutGrid, Menu, Package } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import AppLogoIcon from '@/components/app-logo-icon';
+import AppLogoMark from '@/components/app-logo-mark';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBell } from '@/components/notification-bell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -98,7 +98,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     Navigation menu
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                                    <div className="flex items-center gap-2 text-sm font-semibold">
+                                        <AppLogoMark className="size-8" />
+                                        <span>FarmStock</span>
+                                    </div>
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
@@ -117,8 +120,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             ))}
                                         </div>
 
-                                        <div className="flex flex-col space-y-4">
-                                        </div>
+                                        <div className="flex flex-col space-y-4"></div>
                                     </div>
                                 </div>
                             </SheetContent>
@@ -188,7 +190,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             </Avatar>
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56" align="end">
+                                    <DropdownMenuContent
+                                        className="w-56"
+                                        align="end"
+                                    >
                                         <UserMenuContent user={user} />
                                     </DropdownMenuContent>
                                 </DropdownMenu>
