@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
                                 : Storage::disk('public')->url($user->avatar))
                             : null,
                         'primary_role' => $user->getRoleNames()->first(),
+                        'approval_status' => $user->approval_status,
                         'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
                         'created_at' => $user->created_at?->toDateTimeString(),
                         'updated_at' => $user->updated_at?->toDateTimeString(),

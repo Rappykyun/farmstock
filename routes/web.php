@@ -28,6 +28,10 @@ use App\Http\Controllers\NotificationController;
 Route::get('/', LandingPageController::class)->name('home');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('account/pending-approval', fn () => Inertia::render('account/pending-approval'))
+        ->name('account.pending-approval');
+
+    Route::middleware('approved')->group(function () {
     Route::get('dashboard', [ConsumerDashboardController::class, 'index'])
         ->name('dashboard');
 
@@ -102,6 +106,10 @@ Route::middleware(['auth'])->group(function () {
             ->only(['index', 'store', 'update', 'destroy']);
         Route::resource('users', UserController::class)
             ->only(['index', 'update']);
+        Route::patch('users/{user}/approve', [UserController::class, 'approve'])
+            ->name('users.approve');
+        Route::patch('users/{user}/reject', [UserController::class, 'reject'])
+            ->name('users.reject');
 
         Route::get('reports', [ReportController::class, 'index'])
             ->name('reports.index');
@@ -134,6 +142,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('orders.show');
 });
 
+});
 
 });
 

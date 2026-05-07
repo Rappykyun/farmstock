@@ -1,6 +1,8 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import {
     CalendarDays,
+    CheckCircle2,
+    Clock,
     Eye,
     Mail,
     MapPin,
@@ -8,6 +10,7 @@ import {
     Settings,
     Store,
     UserRound,
+    XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
@@ -47,6 +50,7 @@ import { index, update } from '@/routes/admin/users';
 import type { BreadcrumbItem } from '@/types';
 
 type UserRole = 'admin' | 'farmer' | 'consumer';
+type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 type UserRow = {
     id: number;
@@ -58,6 +62,7 @@ type UserRow = {
     farm_details: string | null;
     avatar: string | null;
     is_active: boolean;
+    approval_status: ApprovalStatus;
     role: string | null;
     created_at: string | null;
 };
@@ -65,15 +70,18 @@ type UserRow = {
 type Props = {
     users: UserRow[];
     availableRoles: string[];
+    availableApprovalStatuses: ApprovalStatus[];
     filters: {
         role: string;
         is_active: string | null;
+        approval_status: string;
     };
 };
 
 type UserFormData = {
     role: UserRole;
     is_active: boolean;
+    approval_status: ApprovalStatus;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -83,7 +91,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function UsersIndex({ users, availableRoles, filters }: Props) {
+export default function UsersIndex({
+    users,
+    availableRoles,
+    availableApprovalStatuses,
+    filters,
+}: Props) {
     const [open, setOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserRow | null>(null);
     const [profileUser, setProfileUser] = useState<UserRow | null>(null);
@@ -91,6 +104,7 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
     const form = useForm<UserFormData>({
         role: 'consumer',
         is_active: true,
+        approval_status: 'pending',
     });
 
     const initials = (name: string) =>
@@ -102,6 +116,20 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
             .toUpperCase();
 
     const roleLabel = (role: string | null) => role ?? 'unassigned';
+
+    const approvalLabel = (status: ApprovalStatus) =>
+        status === 'approved'
+            ? 'Approved'
+            : status === 'rejected'
+              ? 'Rejected'
+              : 'Pending';
+
+    const approvalVariant = (status: ApprovalStatus) =>
+        status === 'approved'
+            ? 'default'
+            : status === 'rejected'
+              ? 'destructive'
+              : 'secondary';
 
     const profileTitle = (user: UserRow) => {
         if (user.role === 'farmer') {
@@ -160,6 +188,7 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
         form.setData({
             role: (user.role as UserRole | null) ?? 'consumer',
             is_active: user.is_active,
+            approval_status: user.approval_status,
         });
         form.clearErrors();
         setOpen(true);
@@ -183,6 +212,26 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
         form.put(update.url(editingUser.id), {
             onSuccess: () => closeModal(false),
         });
+    };
+
+    const approveUser = (user: UserRow) => {
+        router.patch(
+            `/admin/users/${user.id}/approve`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const rejectUser = (user: UserRow) => {
+        router.patch(
+            `/admin/users/${user.id}/reject`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     return (
@@ -211,6 +260,8 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                                     applyFilters({
                                         role: value === 'all' ? '' : value,
                                         is_active: filters.is_active,
+                                        approval_status:
+                                            filters.approval_status,
                                     })
                                 }
                             >
@@ -234,6 +285,8 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                                 onValueChange={(value) =>
                                     applyFilters({
                                         role: filters.role,
+                                        approval_status:
+                                            filters.approval_status,
                                         is_active: value === 'all' ? '' : value,
                                     })
                                 }
@@ -251,6 +304,35 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+
+                            <Select
+                                value={filters.approval_status || 'all'}
+                                onValueChange={(value) =>
+                                    applyFilters({
+                                        role: filters.role,
+                                        is_active: filters.is_active,
+                                        approval_status:
+                                            value === 'all' ? '' : value,
+                                    })
+                                }
+                            >
+                                <SelectTrigger className="w-full sm:w-44">
+                                    <SelectValue placeholder="Filter approval" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        All approvals
+                                    </SelectItem>
+                                    {availableApprovalStatuses.map((status) => (
+                                        <SelectItem
+                                            key={status}
+                                            value={status}
+                                        >
+                                            {approvalLabel(status)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </CardHeader>
 
@@ -265,6 +347,7 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                                     <TableRow>
                                         <TableHead>User</TableHead>
                                         <TableHead>Role</TableHead>
+                                        <TableHead>Approval</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Contact</TableHead>
                                         <TableHead>Farm</TableHead>
@@ -313,6 +396,27 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
 
                                             <TableCell>
                                                 <Badge
+                                                    variant={approvalVariant(
+                                                        user.approval_status,
+                                                    )}
+                                                >
+                                                    {user.approval_status ===
+                                                    'approved' ? (
+                                                        <CheckCircle2 />
+                                                    ) : user.approval_status ===
+                                                      'rejected' ? (
+                                                        <XCircle />
+                                                    ) : (
+                                                        <Clock />
+                                                    )}
+                                                    {approvalLabel(
+                                                        user.approval_status,
+                                                    )}
+                                                </Badge>
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <Badge
                                                     variant={
                                                         user.is_active
                                                             ? 'default'
@@ -354,6 +458,36 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                                                         <Eye data-icon="inline-start" />
                                                         View
                                                     </Button>
+                                                    {user.approval_status ===
+                                                        'pending' && (
+                                                        <>
+                                                            <Button
+                                                                type="button"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    approveUser(
+                                                                        user,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <CheckCircle2 data-icon="inline-start" />
+                                                                Approve
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    rejectUser(
+                                                                        user,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <XCircle data-icon="inline-start" />
+                                                                Reject
+                                                            </Button>
+                                                        </>
+                                                    )}
                                                     <Button
                                                         type="button"
                                                         variant="outline"
@@ -436,6 +570,40 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                             <InputError message={form.errors.is_active} />
 
                             <div className="grid gap-2">
+                                <Label htmlFor="approval_status">
+                                    Approval status
+                                </Label>
+                                <Select
+                                    value={form.data.approval_status}
+                                    onValueChange={(value) =>
+                                        form.setData(
+                                            'approval_status',
+                                            value as ApprovalStatus,
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger id="approval_status">
+                                        <SelectValue placeholder="Select approval" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableApprovalStatuses.map(
+                                            (status) => (
+                                                <SelectItem
+                                                    key={status}
+                                                    value={status}
+                                                >
+                                                    {approvalLabel(status)}
+                                                </SelectItem>
+                                            ),
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                                <InputError
+                                    message={form.errors.approval_status}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
                                 <Label>Notes</Label>
                                 <Textarea
                                     value={
@@ -511,6 +679,15 @@ export default function UsersIndex({ users, availableRoles, filters }: Props) {
                                 <div className="flex flex-wrap gap-2">
                                     <Badge variant="outline">
                                         {roleLabel(profileUser.role)}
+                                    </Badge>
+                                    <Badge
+                                        variant={approvalVariant(
+                                            profileUser.approval_status,
+                                        )}
+                                    >
+                                        {approvalLabel(
+                                            profileUser.approval_status,
+                                        )}
                                     </Badge>
                                     <Badge
                                         variant={

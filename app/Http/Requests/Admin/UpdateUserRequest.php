@@ -24,6 +24,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'role' => ['required', 'in:admin,farmer,consumer'],
             'is_active' => ['required', 'boolean'],
+            'approval_status' => ['required', 'in:pending,approved,rejected'],
         ];
     }
 }

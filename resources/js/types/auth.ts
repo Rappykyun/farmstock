@@ -4,6 +4,7 @@ export type User = {
     email: string;
     avatar?: string;
     primary_role?: string | null;
+    approval_status?: 'pending' | 'approved' | 'rejected';
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;

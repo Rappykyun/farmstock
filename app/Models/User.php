@@ -25,6 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
     'farm_details',
     'avatar',
     'is_active',
+    'approval_status',
 ])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
@@ -76,6 +77,7 @@ public function getActivitylogOptions(): LogOptions
             'farm_details',
             'avatar',
             'is_active',
+            'approval_status',
         ])
         ->logOnlyDirty()
         ->dontSubmitEmptyLogs()

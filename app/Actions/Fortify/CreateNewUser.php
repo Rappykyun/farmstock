@@ -37,6 +37,8 @@ class CreateNewUser implements CreatesNewUsers
             'contact_number' => $input['contact_number'],
             'farm_name' => $input['role'] === 'farmer' ? $input['farm_name'] : null,
             'farm_details' => $input['role'] === 'farmer' ? $input['farm_details'] : null,
+            'approval_status' => 'pending',
+            'is_active' => false,
         ]);
 
         $user->assignRole($input['role']);

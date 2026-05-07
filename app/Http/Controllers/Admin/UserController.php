@@ -17,17 +17,21 @@ class UserController extends Controller
     {
         $role = $request->string('role')->toString();
         $isActive = $request->query('is_active');
+        $approvalStatus = $request->string('approval_status')->toString();
 
         return Inertia::render('admin/users/index', [
             'filters' => [
                 'role' => $role,
                 'is_active' => $isActive,
+                'approval_status' => $approvalStatus,
             ],
             'availableRoles' => ['admin', 'farmer', 'consumer'],
+            'availableApprovalStatuses' => ['pending', 'approved', 'rejected'],
             'users' => User::query()
                 ->with('roles')
                 ->when($role !== '', fn($query) => $query->role($role))
                 ->when($isActive !== null && $isActive !== '', fn($query) => $query->where('is_active', filter_var($isActive, FILTER_VALIDATE_BOOL)))
+                ->when($approvalStatus !== '', fn($query) => $query->where('approval_status', $approvalStatus))
                 ->orderBy('name')
                 ->get()
                 ->map(fn(User $user) => [
@@ -44,6 +48,7 @@ class UserController extends Controller
                             : Storage::disk('public')->url($user->avatar))
                         : null,
                     'is_active' => $user->is_active,
+                    'approval_status' => $user->approval_status,
                     'role' => $user->getRoleNames()->first(),
                     'created_at' => $user->created_at?->toDateTimeString(),
                 ]),
@@ -56,9 +61,30 @@ class UserController extends Controller
 
         $user->update([
             'is_active' => $data['is_active'],
+            'approval_status' => $data['approval_status'],
         ]);
 
         $user->syncRoles([$data['role']]);
+
+        return to_route('admin.users.index');
+    }
+
+    public function approve(User $user): RedirectResponse
+    {
+        $user->update([
+            'approval_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        return to_route('admin.users.index');
+    }
+
+    public function reject(User $user): RedirectResponse
+    {
+        $user->update([
+            'approval_status' => 'rejected',
+            'is_active' => false,
+        ]);
 
         return to_route('admin.users.index');
     }
